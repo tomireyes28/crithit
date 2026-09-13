@@ -16,7 +16,7 @@ export const ScoreBadge: React.FC<ScoreBadgeProps> = ({
   showLabel = false,
   className = '',
 }) => {
-  if (score === null || score === undefined) {
+  if (score === null || score === undefined || isNaN(score)) {
     return (
       <span className="inline-flex items-center justify-center font-mono font-bold text-brand-muted bg-brand-surface border border-brand-border rounded-lg px-2 py-1 text-xs">
         N/A

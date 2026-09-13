@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import {
   Gamepad2,
   Search,
@@ -18,9 +19,20 @@ import {
 import { useAuth } from '@/lib/auth-context';
 
 export const Navbar = () => {
+  const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
+  const [navSearch, setNavSearch] = useState('');
   const { user, logout } = useAuth();
+
+  const handleNavSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (navSearch.trim()) {
+      router.push(`/games?search=${encodeURIComponent(navSearch.trim())}`);
+      setNavSearch('');
+      setMobileMenuOpen(false);
+    }
+  };
 
   return (
     <nav className="sticky top-0 z-50 bg-brand-bg/85 backdrop-blur-md border-b border-brand-border/60 transition-colors">
@@ -81,14 +93,16 @@ export const Navbar = () => {
           {/* Search bar & Auth Actions */}
           <div className="hidden md:flex items-center gap-4">
             {/* Search Input */}
-            <div className="relative w-60">
+            <form onSubmit={handleNavSearch} className="relative w-60">
               <input
                 type="text"
-                placeholder="Buscar juegos, usuarios..."
+                value={navSearch}
+                onChange={(e) => setNavSearch(e.target.value)}
+                placeholder="Buscar juegos..."
                 className="w-full bg-brand-card/90 border border-brand-border/80 rounded-xl pl-9 pr-4 py-1.5 text-sm text-brand-text placeholder-brand-muted focus:outline-none focus:border-brand-primary focus:ring-1 focus:ring-brand-primary transition-all"
               />
               <Search className="w-4 h-4 text-brand-muted absolute left-3 top-2.5" />
-            </div>
+            </form>
 
             {/* User Session Menu */}
             {user ? (
@@ -203,14 +217,16 @@ export const Navbar = () => {
       {/* Mobile menu */}
       {mobileMenuOpen && (
         <div className="md:hidden bg-brand-card/95 border-b border-brand-border px-4 pt-2 pb-6 space-y-3">
-          <div className="relative mb-3">
+          <form onSubmit={handleNavSearch} className="relative mb-3">
             <input
               type="text"
+              value={navSearch}
+              onChange={(e) => setNavSearch(e.target.value)}
               placeholder="Buscar juegos..."
-              className="w-full bg-brand-surface border border-brand-border rounded-lg pl-9 pr-4 py-2 text-sm text-brand-text placeholder-brand-muted"
+              className="w-full bg-brand-surface border border-brand-border rounded-lg pl-9 pr-4 py-2 text-sm text-brand-text placeholder-brand-muted focus:outline-none focus:border-brand-primary"
             />
             <Search className="w-4 h-4 text-brand-muted absolute left-3 top-3" />
-          </div>
+          </form>
           <Link
             href="/games"
             onClick={() => setMobileMenuOpen(false)}

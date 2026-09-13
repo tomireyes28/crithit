@@ -17,6 +17,7 @@
     "db:push": "turbo db:push",
     "db:migrate": "turbo db:migrate",
     "db:seed": "turbo db:seed",
+    "db:seed:catalog": "npm run db:seed:catalog --workspace=@crithit/api",
     "db:studio": "turbo db:studio"
   },
   "devDependencies": {

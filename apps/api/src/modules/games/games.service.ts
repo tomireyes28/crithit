@@ -53,17 +53,26 @@ export class GamesService {
     let orderBy: Prisma.GameOrderByWithRelationInput[] = [];
     switch (query.sort) {
       case 'score':
-        orderBy = [{ communityScore: 'desc' }, { communityCount: 'desc' }];
+        where.communityScore = { not: null };
+        orderBy = [
+          { communityScore: { sort: 'desc', nulls: 'last' } },
+          { communityCount: 'desc' },
+          { metacriticScore: { sort: 'desc', nulls: 'last' } },
+        ];
         break;
       case 'release':
-        orderBy = [{ firstReleaseDate: 'desc' }];
+        orderBy = [{ firstReleaseDate: { sort: 'desc', nulls: 'last' } }];
         break;
       case 'name':
         orderBy = [{ name: 'asc' }];
         break;
       case 'trending':
       default:
-        orderBy = [{ hypeCount: 'desc' }, { totalReviews: 'desc' }, { communityScore: 'desc' }];
+        orderBy = [
+          { hypeCount: 'desc' },
+          { totalReviews: 'desc' },
+          { communityScore: { sort: 'desc', nulls: 'last' } },
+        ];
         break;
     }
 
@@ -259,4 +268,25 @@ export class GamesService {
       platforms: game.platforms.map((p) => p.platform.abbreviation || p.platform.name),
     }));
   }
+
+  /**
+   * Obtiene la lista de todos los géneros disponibles.
+   */
+  async getGenres() {
+    return this.prisma.genre.findMany({
+      orderBy: { name: 'asc' },
+      select: { id: true, name: true, slug: true },
+    });
+  }
+
+  /**
+   * Obtiene la lista de todas las plataformas disponibles.
+   */
+  async getPlatforms() {
+    return this.prisma.platform.findMany({
+      orderBy: { name: 'asc' },
+      select: { id: true, name: true, slug: true, abbreviation: true },
+    });
+  }
 }
+

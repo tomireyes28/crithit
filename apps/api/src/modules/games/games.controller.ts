@@ -36,7 +36,22 @@ export class GamesController {
     return this.gamesService.getUpcoming(limit ? Number(limit) : 8);
   }
 
+  @Get('genres')
+  @ApiOperation({ summary: 'Obtener lista de géneros disponibles' })
+  @ApiResponse({ status: 200, description: 'Lista de géneros' })
+  async getGenres() {
+    return this.gamesService.getGenres();
+  }
+
+  @Get('platforms')
+  @ApiOperation({ summary: 'Obtener lista de plataformas disponibles' })
+  @ApiResponse({ status: 200, description: 'Lista de plataformas' })
+  async getPlatforms() {
+    return this.gamesService.getPlatforms();
+  }
+
   @Get(':slug')
+
   @ApiOperation({ summary: 'Obtener la ficha detallada de un juego por su slug' })
   @ApiResponse({ status: 200, description: 'Ficha completa del juego' })
   @ApiResponse({ status: 404, description: 'Juego no encontrado' })
