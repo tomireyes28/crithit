@@ -21,6 +21,7 @@ interface AuthContextType {
     email: string;
     password: string;
   }) => Promise<void>;
+  loginWithToken: (token: string) => Promise<void>;
   logout: () => void;
 }
 
@@ -80,6 +81,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setUser(res.user);
   };
 
+  const loginWithToken = async (newToken: string) => {
+    localStorage.setItem('crithit_token', newToken);
+    setToken(newToken);
+    try {
+      const userData = await apiClient<UserSummary>('/auth/me');
+      setUser(userData);
+    } catch {
+      localStorage.removeItem('crithit_token');
+      setToken(null);
+      setUser(null);
+    }
+  };
+
   const logout = () => {
     localStorage.removeItem('crithit_token');
     setToken(null);
@@ -94,6 +108,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         isLoading,
         login,
         register,
+        loginWithToken,
         logout,
       }}
     >

@@ -140,6 +140,83 @@ export class AuthService {
     return user;
   }
 
+  async validateGoogleUser(googleProfile: {
+    googleId: string;
+    email: string;
+    displayName: string;
+    avatarUrl?: string | null;
+  }) {
+    const email = googleProfile.email.toLowerCase();
+
+    // 1. Buscar si ya existe el usuario por googleId
+    let user = await this.prisma.user.findUnique({
+      where: { googleId: googleProfile.googleId },
+    });
+
+    if (user) {
+      if (!user.avatarUrl && googleProfile.avatarUrl) {
+        user = await this.prisma.user.update({
+          where: { id: user.id },
+          data: { avatarUrl: googleProfile.avatarUrl },
+        });
+      }
+      return {
+        user,
+        accessToken: this.generateToken(user),
+      };
+    }
+
+    // 2. Si no existe por googleId, buscar si ya tenía cuenta con el mismo email
+    user = await this.prisma.user.findUnique({
+      where: { email },
+    });
+
+    if (user) {
+      user = await this.prisma.user.update({
+        where: { id: user.id },
+        data: {
+          googleId: googleProfile.googleId,
+          emailVerified: true,
+          avatarUrl: user.avatarUrl || googleProfile.avatarUrl || null,
+        },
+      });
+      return {
+        user,
+        accessToken: this.generateToken(user),
+      };
+    }
+
+    // 3. Crear nuevo usuario si no existía
+    let baseUsername = email.split('@')[0].replace(/[^a-zA-Z0-9_]/g, '').toLowerCase();
+    if (!baseUsername || baseUsername.length < 3) {
+      baseUsername = `gamer_${Date.now().toString().slice(-4)}`;
+    }
+
+    let username = baseUsername;
+    let counter = 1;
+    while (await this.prisma.user.findUnique({ where: { username } })) {
+      username = `${baseUsername}${counter}`;
+      counter++;
+    }
+
+    user = await this.prisma.user.create({
+      data: {
+        email,
+        username,
+        displayName: googleProfile.displayName || username,
+        googleId: googleProfile.googleId,
+        avatarUrl: googleProfile.avatarUrl || null,
+        emailVerified: true,
+        role: 'USER',
+      },
+    });
+
+    return {
+      user,
+      accessToken: this.generateToken(user),
+    };
+  }
+
   private generateToken(user: {
     id: string;
     email: string;

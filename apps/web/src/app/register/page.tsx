@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
@@ -16,7 +16,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
 
-export default function RegisterPage() {
+function RegisterForm() {
   const router = useRouter();
   const { register } = useAuth();
 
@@ -62,39 +62,44 @@ export default function RegisterPage() {
     }
   };
 
+  const handleGoogleLogin = () => {
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL?.replace(/\/api\/?$/, '') || 'http://localhost:4000';
+    window.location.href = `${apiUrl}/api/auth/google`;
+  };
+
   return (
-    <div className="min-h-[85vh] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8 bg-brand-card border border-brand-border/80 p-8 sm:p-10 rounded-3xl shadow-2xl relative overflow-hidden">
-        {/* Decorative Glow */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-48 h-1 bg-gradient-to-r from-transparent via-brand-secondary to-transparent" />
+    <div className="max-w-md w-full space-y-8 bg-brand-card border border-brand-border/80 p-8 sm:p-10 rounded-3xl shadow-2xl relative overflow-hidden">
+      {/* Decorative Glow */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-48 h-1 bg-gradient-to-r from-transparent via-brand-secondary to-transparent" />
 
-        {/* Header */}
-        <div className="text-center space-y-2">
-          <div className="inline-flex w-12 h-12 rounded-2xl bg-gradient-to-tr from-brand-secondary to-brand-primary items-center justify-center shadow-glow-secondary mb-2">
-            <Gamepad2 className="w-7 h-7 text-white" />
-          </div>
-          <h2 className="text-3xl font-black tracking-tight text-white">
-            Únete a CritHit
-          </h2>
-          <p className="text-sm text-brand-muted">
-            Crea tu perfil gamer, califica del 0 al 100 y conviértete en crítico verificado.
-          </p>
+      {/* Header */}
+      <div className="text-center space-y-2">
+        <div className="inline-flex w-12 h-12 rounded-2xl bg-gradient-to-tr from-brand-secondary to-brand-primary items-center justify-center shadow-glow-secondary mb-2">
+          <Gamepad2 className="w-7 h-7 text-white" />
         </div>
+        <h2 className="text-3xl font-black tracking-tight text-white">
+          Únete a CritHit
+        </h2>
+        <p className="text-sm text-brand-muted">
+          Crea tu perfil gamer, califica del 0 al 100 y conviértete en crítico verificado.
+        </p>
+      </div>
 
-        {/* Error Alert */}
-        {error && (
-          <div className="bg-rose-500/15 border border-rose-500/30 rounded-xl p-3.5 flex items-start gap-3 text-rose-400 text-sm">
-            <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
-            <span>{error}</span>
-          </div>
-        )}
+      {/* Error Alert */}
+      {error && (
+        <div className="bg-rose-500/15 border border-rose-500/30 rounded-xl p-3.5 flex items-start gap-3 text-rose-400 text-sm">
+          <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
+          <span>{error}</span>
+        </div>
+      )}
 
-        {/* Google OAuth Button */}
-        <button
-          type="button"
-          onClick={() => setError('El registro con Google estará disponible en el próximo despliegue.')}
-          className="w-full flex items-center justify-center gap-3 px-4 py-3 border border-brand-border bg-brand-surface hover:bg-brand-surface/80 rounded-xl text-sm font-semibold text-white transition-colors"
-        >
+      {/* Google OAuth Button */}
+      <button
+        type="button"
+        onClick={handleGoogleLogin}
+        disabled={isSubmitting}
+        className="w-full flex items-center justify-center gap-3 px-4 py-3 border border-brand-border bg-brand-surface hover:bg-brand-surface/80 rounded-xl text-sm font-semibold text-white transition-colors disabled:opacity-50"
+      >
           <svg className="w-4 h-4" viewBox="0 0 24 24">
             <path
               fill="#EA4335"
@@ -244,6 +249,15 @@ export default function RegisterPage() {
           </Link>
         </p>
       </div>
+  );
+}
+
+export default function RegisterPage() {
+  return (
+    <div className="min-h-[85vh] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+      <Suspense fallback={<div className="text-brand-muted text-sm">Cargando...</div>}>
+        <RegisterForm />
+      </Suspense>
     </div>
   );
 }
