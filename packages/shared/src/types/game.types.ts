@@ -59,16 +59,20 @@ export interface HltbHours {
 
 export interface GameSummary {
   id: string;
-  igdbId: number;
+  igdbId: number | null;
+  rawgId?: number | null;
   slug: string;
   name: string;
   coverImageId: string | null;
   backdropImageId: string | null;
+  coverUrl?: string | null;
+  backdropUrl?: string | null;
   firstReleaseDate: string | null;
   communityScore: number | null;
   communityCount: number;
   criticScore: number | null;
   criticCount: number;
+  metacriticScore?: number | null;
   genres: string[];
   platforms: string[];
 }

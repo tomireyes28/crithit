@@ -104,7 +104,9 @@ model Follow {
 
 model Game {
   id                String       @id @default(cuid())
-  igdbId            Int          @unique
+  igdbId            Int?         @unique
+  rawgId            Int?         @unique
+  steamAppId        Int?
   slug              String       @unique
   name              String
   summary           String?      @db.Text
@@ -112,6 +114,8 @@ model Game {
 
   coverImageId      String?
   backdropImageId   String?
+  coverUrl          String?
+  backdropUrl       String?
   screenshotIds     String[]
   trailerUrls       String[]
 
@@ -138,6 +142,7 @@ model Game {
   communityCount    Int          @default(0)
   criticScore       Float?
   criticCount       Int          @default(0)
+  metacriticScore   Int?
   totalReviews      Int          @default(0)
   recommendPercent  Float?
   hypeCount         Int          @default(0)
@@ -486,7 +491,7 @@ enum NotificationType {
 
 model Genre {
   id     String      @id @default(cuid())
-  igdbId Int         @unique
+  igdbId Int?        @unique
   name   String      @unique
   slug   String      @unique
   games  GameGenre[]
@@ -503,7 +508,7 @@ model GameGenre {
 
 model Platform {
   id           String         @id @default(cuid())
-  igdbId       Int            @unique
+  igdbId       Int?           @unique
   name         String
   slug         String         @unique
   abbreviation String?
@@ -522,7 +527,7 @@ model GamePlatform {
 
 model Theme {
   id     String      @id @default(cuid())
-  igdbId Int         @unique
+  igdbId Int?        @unique
   name   String      @unique
   slug   String      @unique
   games  GameTheme[]
@@ -539,7 +544,7 @@ model GameTheme {
 
 model Mode {
   id     String     @id @default(cuid())
-  igdbId Int        @unique
+  igdbId Int?       @unique
   name   String     @unique
   games  GameMode[]
 }
