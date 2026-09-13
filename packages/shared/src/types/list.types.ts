@@ -1,5 +1,5 @@
-import { UserSummary } from './user.types.js';
-import { GameSummary } from './game.types.js';
+import { UserSummary } from './user.types';
+import { GameSummary } from './game.types';
 
 export interface GameListEntry {
   id: string;

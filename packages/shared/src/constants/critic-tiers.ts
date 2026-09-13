@@ -1,4 +1,4 @@
-import { CriticTierDetails } from '../types/critic.types.js';
+import { CriticTierDetails } from '../types/critic.types';
 
 export const CRITIC_TIER_CONFIG: Record<string, CriticTierDetails> = {
   VERIFIED: {

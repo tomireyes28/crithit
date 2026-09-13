@@ -1,7 +1,7 @@
-import { UserSummary } from './user.types.js';
-import { GameSummary } from './game.types.js';
-import { Review } from './review.types.js';
-import { PlayStatus } from './play-log.types.js';
+import { UserSummary } from './user.types';
+import { GameSummary } from './game.types';
+import { Review } from './review.types';
+import { PlayStatus } from './play-log.types';
 
 export type ActivityType =
   | 'RATED_GAME'

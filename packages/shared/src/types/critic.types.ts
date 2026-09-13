@@ -1,4 +1,4 @@
-import { CriticTier } from './user.types.js';
+import { CriticTier } from './user.types';
 
 export type ExamType = 'BASIC_CRITIC' | 'EXPERT_CRITIC';
 

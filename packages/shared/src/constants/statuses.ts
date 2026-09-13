@@ -1,4 +1,4 @@
-import { PlayStatus, PlayStatusInfo } from '../types/play-log.types.js';
+import { PlayStatus, PlayStatusInfo } from '../types/play-log.types';
 
 export const PLAY_STATUS_MAP: Record<PlayStatus, PlayStatusInfo> = {
   PLAYING: {

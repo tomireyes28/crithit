@@ -1,4 +1,4 @@
-import { ScoreColorInfo, ScoreRatingBand } from '../types/review.types.js';
+import { ScoreColorInfo, ScoreRatingBand } from '../types/review.types';
 
 export const SCORE_BANDS: ScoreRatingBand[] = [
   {

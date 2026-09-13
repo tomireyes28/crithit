@@ -1,4 +1,4 @@
-import { GameSummary } from './game.types.js';
+import { GameSummary } from './game.types';
 
 export type PlayStatus =
   | 'PLAYING'
