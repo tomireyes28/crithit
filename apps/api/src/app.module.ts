@@ -6,6 +6,7 @@ import { GamesModule } from './modules/games/games.module';
 import { ReviewsModule } from './modules/reviews/reviews.module';
 import { PlayLogsModule } from './modules/play-logs/play-logs.module';
 import { UsersModule } from './modules/users/users.module';
+import { ListsModule } from './modules/lists/lists.module';
 import { AppController } from './app.controller';
 
 @Module({
@@ -20,6 +21,7 @@ import { AppController } from './app.controller';
     ReviewsModule,
     PlayLogsModule,
     UsersModule,
+    ListsModule,
   ],
   controllers: [AppController],
   providers: [],

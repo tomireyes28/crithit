@@ -10,6 +10,7 @@ import { FavoriteFour } from '@/components/profile/FavoriteFour';
 import { ScoreHistogram } from '@/components/profile/ScoreHistogram';
 import { FavoriteSelectorModal } from '@/components/profile/FavoriteSelectorModal';
 import { EditProfileModal } from '@/components/profile/EditProfileModal';
+import { ListCard } from '@/components/lists/ListCard';
 import { PLAY_STATUS_MAP, PlayStatus } from '@crithit/shared';
 
 interface ProfileData {
@@ -97,7 +98,9 @@ export default function UserProfilePage() {
   const [profile, setProfile] = useState<ProfileData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState<'reviews' | 'diary'>('reviews');
+  const [activeTab, setActiveTab] = useState<'reviews' | 'diary' | 'lists'>('reviews');
+  const [userLists, setUserLists] = useState<any[]>([]);
+  const [isLoadingLists, setIsLoadingLists] = useState(false);
 
   const [isFavoritesModalOpen, setIsFavoritesModalOpen] = useState(false);
   const [isEditProfileModalOpen, setIsEditProfileModalOpen] = useState(false);
@@ -125,6 +128,16 @@ export default function UserProfilePage() {
   useEffect(() => {
     fetchProfile();
   }, [fetchProfile]);
+
+  useEffect(() => {
+    if (activeTab === 'lists' && username) {
+      setIsLoadingLists(true);
+      apiClient(`/lists/user/${username}`)
+        .then((data: any) => setUserLists(data || []))
+        .catch(() => setUserLists([]))
+        .finally(() => setIsLoadingLists(false));
+    }
+  }, [activeTab, username]);
 
   const handleFavoritesSaved = (updatedFavorites: any[]) => {
     if (profile) {
@@ -399,6 +412,20 @@ export default function UserProfilePage() {
                 <div className="absolute bottom-0 inset-x-0 h-0.5 bg-brand-accent rounded-full" />
               )}
             </button>
+
+            <button
+              onClick={() => setActiveTab('lists')}
+              className={`text-sm font-bold pb-2 transition-all relative ${
+                activeTab === 'lists'
+                  ? 'text-brand-text'
+                  : 'text-brand-muted hover:text-brand-text'
+              }`}
+            >
+              <span>Listas</span>
+              {activeTab === 'lists' && (
+                <div className="absolute bottom-0 inset-x-0 h-0.5 bg-brand-accent rounded-full" />
+              )}
+            </button>
           </div>
 
           {activeTab === 'reviews' ? (
@@ -458,58 +485,74 @@ export default function UserProfilePage() {
                 ))}
               </div>
             )
-          ) : profile.recentPlays.length === 0 ? (
-            <p className="text-xs text-brand-muted py-6 text-center">
-              No hay partidas registradas recientemente en el diario.
-            </p>
-          ) : (
-            <div className="space-y-3">
-              {profile.recentPlays.map((p) => {
-                const statusInfo = PLAY_STATUS_MAP[p.status];
-                return (
-                  <div
-                    key={p.id}
-                    className="p-3.5 rounded-2xl bg-brand-surface/40 border border-brand-border/60 flex items-center justify-between gap-4"
-                  >
-                    <div className="flex items-center gap-3 min-w-0">
-                      <Link
-                        href={`/games/${p.game.slug}`}
-                        className="w-10 h-14 rounded-lg overflow-hidden bg-brand-surface border border-brand-border flex-shrink-0"
-                      >
-                        {p.game.coverUrl && (
-                          <img
-                            src={p.game.coverUrl}
-                            alt={p.game.name}
-                            className="w-full h-full object-cover"
-                          />
-                        )}
-                      </Link>
-
-                      <div className="min-w-0">
+          ) : activeTab === 'diary' ? (
+            profile.recentPlays.length === 0 ? (
+              <p className="text-xs text-brand-muted py-6 text-center">
+                No hay partidas registradas recientemente en el diario.
+              </p>
+            ) : (
+              <div className="space-y-3">
+                {profile.recentPlays.map((p) => {
+                  const statusInfo = PLAY_STATUS_MAP[p.status];
+                  return (
+                    <div
+                      key={p.id}
+                      className="p-3.5 rounded-2xl bg-brand-surface/40 border border-brand-border/60 flex items-center justify-between gap-4"
+                    >
+                      <div className="flex items-center gap-3 min-w-0">
                         <Link
                           href={`/games/${p.game.slug}`}
-                          className="text-sm font-bold text-brand-text hover:text-brand-accent transition-colors truncate block"
+                          className="w-10 h-14 rounded-lg overflow-hidden bg-brand-surface border border-brand-border flex-shrink-0"
                         >
-                          {p.game.name}
+                          {p.game.coverUrl && (
+                            <img
+                              src={p.game.coverUrl}
+                              alt={p.game.name}
+                              className="w-full h-full object-cover"
+                            />
+                          )}
                         </Link>
-                        <span className="text-[11px] text-brand-muted">
-                          {formatDate(p.logDate)}
-                          {p.platform ? ` · ${p.platform}` : ''}
-                          {p.hoursPlayed ? ` · ⏱️ ${p.hoursPlayed}h` : ''}
-                        </span>
-                      </div>
-                    </div>
 
-                    {statusInfo && (
-                      <span
-                        className={`px-2.5 py-0.5 rounded-full text-xs font-bold border flex-shrink-0 ${statusInfo.badgeClass}`}
-                      >
-                        {statusInfo.labelEs}
-                      </span>
-                    )}
-                  </div>
-                );
-              })}
+                        <div className="min-w-0">
+                          <Link
+                            href={`/games/${p.game.slug}`}
+                            className="text-sm font-bold text-brand-text hover:text-brand-accent transition-colors truncate block"
+                          >
+                            {p.game.name}
+                          </Link>
+                          <span className="text-[11px] text-brand-muted">
+                            {formatDate(p.logDate)}
+                            {p.platform ? ` · ${p.platform}` : ''}
+                            {p.hoursPlayed ? ` · ⏱️ ${p.hoursPlayed}h` : ''}
+                          </span>
+                        </div>
+                      </div>
+
+                      {statusInfo && (
+                        <span
+                          className={`px-2.5 py-0.5 rounded-full text-xs font-bold border flex-shrink-0 ${statusInfo.badgeClass}`}
+                        >
+                          {statusInfo.labelEs}
+                        </span>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )
+          ) : isLoadingLists ? (
+            <div className="py-12 text-center text-xs text-brand-muted">Cargando listas...</div>
+          ) : userLists.length === 0 ? (
+            <div className="py-12 text-center text-xs text-brand-muted">
+              {isOwner
+                ? 'Aún no has creado ninguna lista. ¡Crea tu primera lista desde la sección Listas!'
+                : 'Este usuario aún no tiene listas públicas.'}
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {userLists.map((list) => (
+                <ListCard key={list.id} list={list} />
+              ))}
             </div>
           )}
         </section>

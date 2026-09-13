@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { useAuth } from '@/lib/auth-context';
 import { apiClient } from '@/lib/api';
 import { PlayStatus, PLAY_STATUS_MAP } from '@crithit/shared';
+import { Bookmark } from 'lucide-react';
+import { AddToListModal } from '@/components/lists/AddToListModal';
 
 export interface GameActionDockProps {
   game: {
@@ -49,6 +51,7 @@ export const GameActionDock: React.FC<GameActionDockProps> = ({
   const [currentStatus, setCurrentStatus] = useState<PlayStatus | null>(userPlayStatus);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [isStatusUpdating, setIsStatusUpdating] = useState(false);
+  const [isListModalOpen, setIsListModalOpen] = useState(false);
 
   useEffect(() => {
     setCurrentStatus(userPlayStatus);
@@ -122,6 +125,14 @@ export const GameActionDock: React.FC<GameActionDockProps> = ({
     onOpenLogModal?.(currentStatus || 'PLAYING');
   };
 
+  const handleListClick = () => {
+    if (!user) {
+      showToast('Inicia sesión para guardar este juego en tus listas 📋');
+      return;
+    }
+    setIsListModalOpen(true);
+  };
+
   return (
     <div className="w-full bg-brand-surface/80 backdrop-blur-lg border-y border-brand-border/60 py-3 sticky top-16 z-20 shadow-lg shadow-black/20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-wrap items-center justify-between gap-4">
@@ -153,7 +164,16 @@ export const GameActionDock: React.FC<GameActionDockProps> = ({
             <span>Añadir al Diario</span>
           </button>
 
-          {/* Botón 3: Favorito */}
+          {/* Botón 3: Guardar en Lista */}
+          <button
+            onClick={handleListClick}
+            className="flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold bg-brand-bg hover:bg-brand-surface border border-brand-border hover:border-brand-accent/50 text-brand-text transition-all"
+          >
+            <Bookmark className="w-3.5 h-3.5 text-brand-accent" />
+            <span>Lista</span>
+          </button>
+
+          {/* Botón 4: Favorito */}
           <button
             onClick={handleFavoriteClick}
             className={`flex items-center gap-2 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all border ${
@@ -242,6 +262,13 @@ export const GameActionDock: React.FC<GameActionDockProps> = ({
           </div>
         </div>
       )}
+
+      {/* Modal para añadir a listas */}
+      <AddToListModal
+        isOpen={isListModalOpen}
+        onClose={() => setIsListModalOpen(false)}
+        game={game}
+      />
     </div>
   );
 };
