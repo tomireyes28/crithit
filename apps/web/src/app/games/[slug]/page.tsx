@@ -5,10 +5,12 @@ import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { apiClient } from '@/lib/api';
 import { useAuth } from '@/lib/auth-context';
+import { PlayStatus } from '@crithit/shared';
 import { GameHero } from '@/components/games/detail/GameHero';
 import { GameActionDock } from '@/components/games/detail/GameActionDock';
 import { GameReviewsList } from '@/components/games/detail/GameReviewsList';
 import { ReviewModal } from '@/components/games/detail/ReviewModal';
+import { LogPlayModal } from '@/components/games/detail/LogPlayModal';
 
 interface GameDetailData {
   id: string;
@@ -67,10 +69,13 @@ export default function GameDetailPage() {
 
   const [game, setGame] = useState<GameDetailData | null>(null);
   const [userReview, setUserReview] = useState<any | null>(null);
+  const [userPlayStatus, setUserPlayStatus] = useState<PlayStatus | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isSummaryExpanded, setIsSummaryExpanded] = useState(false);
   const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
+  const [isLogModalOpen, setIsLogModalOpen] = useState(false);
+  const [initialLogStatus, setInitialLogStatus] = useState<PlayStatus>('PLAYING');
 
   // Cargar datos del juego
   const fetchGameData = useCallback(async () => {
@@ -93,28 +98,35 @@ export default function GameDetailPage() {
     fetchGameData();
   }, [fetchGameData]);
 
-  // Cargar reseña del usuario autenticado si existe
+  // Cargar reseña y estado de juego del usuario autenticado si existe
   useEffect(() => {
     if (!game?.id || !user) {
       setUserReview(null);
+      setUserPlayStatus(null);
       return;
     }
 
     let isMounted = true;
-    const fetchUserReview = async () => {
+    const fetchUserData = async () => {
       try {
-        const myReview = await apiClient<any>(`/reviews/game/${game.id}/me`);
+        const [myReview, myStatus] = await Promise.all([
+          apiClient<any>(`/reviews/game/${game.id}/me`).catch(() => null),
+          apiClient<{ status: PlayStatus | null }>(`/play-logs/game/${game.id}/status`).catch(() => null),
+        ]);
+
         if (isMounted) {
           setUserReview(myReview);
+          setUserPlayStatus(myStatus?.status || null);
         }
       } catch {
         if (isMounted) {
           setUserReview(null);
+          setUserPlayStatus(null);
         }
       }
     };
 
-    fetchUserReview();
+    fetchUserData();
 
     return () => {
       isMounted = false;
@@ -123,13 +135,28 @@ export default function GameDetailPage() {
 
   const handleReviewSaved = async (savedReview: any) => {
     setUserReview(savedReview);
-    // Recargar datos actualizados del juego (scores y reviews)
     await fetchGameData();
   };
 
   const handleReviewDeleted = async () => {
     setUserReview(null);
     await fetchGameData();
+  };
+
+  const handleLogSaved = async (savedLog: any) => {
+    setUserPlayStatus(savedLog.status);
+    await fetchGameData();
+  };
+
+  const handleOpenLogModal = (statusToSet?: PlayStatus) => {
+    if (statusToSet) {
+      setInitialLogStatus(statusToSet);
+    } else if (userPlayStatus) {
+      setInitialLogStatus(userPlayStatus);
+    } else {
+      setInitialLogStatus('PLAYING');
+    }
+    setIsLogModalOpen(true);
   };
 
   // Estado de Carga: Skeleton Completo
@@ -207,11 +234,14 @@ export default function GameDetailPage() {
       {/* 1. Hero Cinematográfico con Backdrop y Scoreboard */}
       <GameHero game={game} />
 
-      {/* 2. Barra de Acciones Rápida (Letterboxd Style) con soporte de modal de reseña */}
+      {/* 2. Barra de Acciones Rápida (Letterboxd Style) con soporte de modal de reseña y diario */}
       <GameActionDock
         game={game}
         userReview={userReview}
+        userPlayStatus={userPlayStatus}
         onOpenReviewModal={() => setIsReviewModalOpen(true)}
+        onOpenLogModal={handleOpenLogModal}
+        onStatusChanged={(st) => setUserPlayStatus(st)}
       />
 
       {/* 3. Contenido Principal: 2 Columnas */}
@@ -359,6 +389,15 @@ export default function GameDetailPage() {
         existingReview={userReview}
         onReviewSaved={handleReviewSaved}
         onReviewDeleted={handleReviewDeleted}
+      />
+
+      {/* 5. Modal Interactivo de Diario de Juego (LogPlayModal) */}
+      <LogPlayModal
+        isOpen={isLogModalOpen}
+        onClose={() => setIsLogModalOpen(false)}
+        game={game}
+        initialStatus={initialLogStatus}
+        onLogSaved={handleLogSaved}
       />
     </div>
   );

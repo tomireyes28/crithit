@@ -63,6 +63,12 @@ export const Navbar = () => {
                 Juegos
               </Link>
               <Link
+                href="/diary"
+                className="px-3.5 py-2 rounded-lg text-sm font-medium text-brand-muted hover:text-white hover:bg-brand-surface/60 transition-colors"
+              >
+                Diario
+              </Link>
+              <Link
                 href="/reviews"
                 className="px-3.5 py-2 rounded-lg text-sm font-medium text-brand-muted hover:text-white hover:bg-brand-surface/60 transition-colors"
               >
@@ -151,6 +157,15 @@ export const Navbar = () => {
                     </Link>
 
                     <Link
+                      href="/diary"
+                      onClick={() => setUserDropdownOpen(false)}
+                      className="flex items-center gap-2.5 px-4 py-2 text-sm text-brand-muted hover:text-white hover:bg-brand-surface transition-colors"
+                    >
+                      <Bookmark className="w-4 h-4 text-brand-primary" />
+                      Mi Diario
+                    </Link>
+
+                    <Link
                       href={`/profile/${user.username}/reviews`}
                       onClick={() => setUserDropdownOpen(false)}
                       className="flex items-center gap-2.5 px-4 py-2 text-sm text-brand-muted hover:text-white hover:bg-brand-surface transition-colors"
@@ -233,6 +248,13 @@ export const Navbar = () => {
             className="block px-3 py-2 rounded-md text-base font-medium text-brand-muted hover:text-white hover:bg-brand-surface"
           >
             Juegos
+          </Link>
+          <Link
+            href="/diary"
+            onClick={() => setMobileMenuOpen(false)}
+            className="block px-3 py-2 rounded-md text-base font-medium text-brand-muted hover:text-white hover:bg-brand-surface"
+          >
+            Diario
           </Link>
           <Link
             href="/reviews"

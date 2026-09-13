@@ -1,14 +1,18 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/lib/auth-context';
+import { apiClient } from '@/lib/api';
+import { PlayStatus, PLAY_STATUS_MAP } from '@crithit/shared';
 
 export interface GameActionDockProps {
   game: {
     id: string;
     slug: string;
     name: string;
+    coverUrl?: string | null;
+    platforms?: Array<{ id: string; name: string; abbreviation: string | null }>;
     _count?: {
       reviews: number;
       playLogs: number;
@@ -25,19 +29,30 @@ export interface GameActionDockProps {
     containsSpoilers: boolean;
     recommends: boolean | null;
   } | null;
+  userPlayStatus?: PlayStatus | null;
   onOpenReviewModal?: () => void;
+  onOpenLogModal?: (status?: PlayStatus) => void;
+  onStatusChanged?: (newStatus: PlayStatus) => void;
 }
 
 export const GameActionDock: React.FC<GameActionDockProps> = ({
   game,
   userReview,
+  userPlayStatus = null,
   onOpenReviewModal,
+  onOpenLogModal,
+  onStatusChanged,
 }) => {
   const { user } = useAuth();
   const [isFavorited, setIsFavorited] = useState(false);
   const [favoriteCount, setFavoriteCount] = useState(game._count?.favoritedBy || 0);
-  const [currentStatus, setCurrentStatus] = useState<string | null>(null);
+  const [currentStatus, setCurrentStatus] = useState<PlayStatus | null>(userPlayStatus);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [isStatusUpdating, setIsStatusUpdating] = useState(false);
+
+  useEffect(() => {
+    setCurrentStatus(userPlayStatus);
+  }, [userPlayStatus]);
 
   const showToast = (msg: string) => {
     setToastMessage(msg);
@@ -57,17 +72,37 @@ export const GameActionDock: React.FC<GameActionDockProps> = ({
     showToast(nextState ? '¡Añadido a tus favoritos!' : 'Eliminado de tus favoritos');
   };
 
-  const handleStatusChange = (status: string, label: string) => {
+  const handleQuickStatusChange = async (newStatus: PlayStatus) => {
     if (!user) {
-      showToast('Inicia sesión para gestionar el estado de este juego 🎮');
+      showToast('Inicia sesión para registrar el estado de este juego 🎮');
       return;
     }
-    if (currentStatus === status) {
-      setCurrentStatus(null);
-      showToast('Estado restablecido');
-    } else {
-      setCurrentStatus(status);
-      showToast(`Marcado como: ${label}`);
+
+    if (currentStatus === newStatus) {
+      // Abrir modal para editar detalles de la partida existente
+      onOpenLogModal?.(newStatus);
+      return;
+    }
+
+    setIsStatusUpdating(true);
+    const label = PLAY_STATUS_MAP[newStatus]?.labelEs || newStatus;
+
+    try {
+      await apiClient('/play-logs', {
+        method: 'POST',
+        body: JSON.stringify({
+          gameId: game.id,
+          status: newStatus,
+        }),
+      });
+
+      setCurrentStatus(newStatus);
+      onStatusChanged?.(newStatus);
+      showToast(`¡Partida registrada como: ${label}! 📖`);
+    } catch {
+      showToast('Error al actualizar el estado. Inténtalo de nuevo.');
+    } finally {
+      setIsStatusUpdating(false);
     }
   };
 
@@ -84,7 +119,7 @@ export const GameActionDock: React.FC<GameActionDockProps> = ({
       showToast('Inicia sesión para registrar una partida en tu diario 📖');
       return;
     }
-    showToast('El registro de sesiones y PlayLog se activará en el Paso 11 ⏱️');
+    onOpenLogModal?.(currentStatus || 'PLAYING');
   };
 
   return (
@@ -128,7 +163,7 @@ export const GameActionDock: React.FC<GameActionDockProps> = ({
             }`}
           >
             <span>{isFavorited ? '❤️' : '🤍'}</span>
-            <span className="hidden sm:inline">{isFavorited ? 'Favorito' : 'Favorito'}</span>
+            <span className="hidden sm:inline">Favorito</span>
             <span className="text-xs px-1.5 py-0.5 rounded-full bg-brand-surface/90 font-mono text-brand-muted">
               {favoriteCount}
             </span>
@@ -142,10 +177,11 @@ export const GameActionDock: React.FC<GameActionDockProps> = ({
           </span>
 
           <button
-            onClick={() => handleStatusChange('PLAYING', 'Jugando')}
+            onClick={() => handleQuickStatusChange('PLAYING')}
+            disabled={isStatusUpdating}
             className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
               currentStatus === 'PLAYING'
-                ? 'bg-cyan-500/20 text-cyan-400 border border-cyan-500/50 shadow-sm'
+                ? 'bg-blue-500/20 text-blue-400 border border-blue-500/50 shadow-sm font-bold ring-1 ring-blue-500/30'
                 : 'bg-brand-bg/60 hover:bg-brand-bg text-brand-muted border border-brand-border/40 hover:text-brand-text'
             }`}
           >
@@ -153,10 +189,11 @@ export const GameActionDock: React.FC<GameActionDockProps> = ({
           </button>
 
           <button
-            onClick={() => handleStatusChange('COMPLETED', 'Completado')}
+            onClick={() => handleQuickStatusChange('COMPLETED')}
+            disabled={isStatusUpdating}
             className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
               currentStatus === 'COMPLETED'
-                ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/50 shadow-sm'
+                ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/50 shadow-sm font-bold ring-1 ring-emerald-500/30'
                 : 'bg-brand-bg/60 hover:bg-brand-bg text-brand-muted border border-brand-border/40 hover:text-brand-text'
             }`}
           >
@@ -164,10 +201,23 @@ export const GameActionDock: React.FC<GameActionDockProps> = ({
           </button>
 
           <button
-            onClick={() => handleStatusChange('BACKLOG', 'En Backlog')}
+            onClick={() => handleQuickStatusChange('MASTERED')}
+            disabled={isStatusUpdating}
+            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+              currentStatus === 'MASTERED'
+                ? 'bg-amber-500/20 text-amber-300 border border-amber-500/50 shadow-sm font-bold ring-1 ring-amber-500/30'
+                : 'bg-brand-bg/60 hover:bg-brand-bg text-brand-muted border border-brand-border/40 hover:text-brand-text'
+            }`}
+          >
+            👑 100%
+          </button>
+
+          <button
+            onClick={() => handleQuickStatusChange('BACKLOG')}
+            disabled={isStatusUpdating}
             className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
               currentStatus === 'BACKLOG'
-                ? 'bg-amber-500/20 text-amber-400 border border-amber-500/50 shadow-sm'
+                ? 'bg-purple-500/20 text-purple-400 border border-purple-500/50 shadow-sm font-bold ring-1 ring-purple-500/30'
                 : 'bg-brand-bg/60 hover:bg-brand-bg text-brand-muted border border-brand-border/40 hover:text-brand-text'
             }`}
           >

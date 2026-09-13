@@ -4,6 +4,7 @@ import { PrismaModule } from './prisma/prisma.module';
 import { AuthModule } from './modules/auth/auth.module';
 import { GamesModule } from './modules/games/games.module';
 import { ReviewsModule } from './modules/reviews/reviews.module';
+import { PlayLogsModule } from './modules/play-logs/play-logs.module';
 import { AppController } from './app.controller';
 
 @Module({
@@ -16,6 +17,7 @@ import { AppController } from './app.controller';
     AuthModule,
     GamesModule,
     ReviewsModule,
+    PlayLogsModule,
   ],
   controllers: [AppController],
   providers: [],
