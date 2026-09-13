@@ -15,9 +15,24 @@ export interface GameActionDockProps {
       favoritedBy: number;
     };
   };
+  userReview?: {
+    id: string;
+    score: number;
+    title: string | null;
+    body: string | null;
+    platform: string | null;
+    playtimeAtReview: number | null;
+    containsSpoilers: boolean;
+    recommends: boolean | null;
+  } | null;
+  onOpenReviewModal?: () => void;
 }
 
-export const GameActionDock: React.FC<GameActionDockProps> = ({ game }) => {
+export const GameActionDock: React.FC<GameActionDockProps> = ({
+  game,
+  userReview,
+  onOpenReviewModal,
+}) => {
   const { user } = useAuth();
   const [isFavorited, setIsFavorited] = useState(false);
   const [favoriteCount, setFavoriteCount] = useState(game._count?.favoritedBy || 0);
@@ -61,7 +76,7 @@ export const GameActionDock: React.FC<GameActionDockProps> = ({ game }) => {
       showToast('Inicia sesión para calificar y escribir tu reseña ⭐');
       return;
     }
-    showToast('El formulario de puntuación interactiva con ScoreSlider se activará en el Paso 10 📝');
+    onOpenReviewModal?.();
   };
 
   const handleLogClick = () => {
@@ -80,10 +95,18 @@ export const GameActionDock: React.FC<GameActionDockProps> = ({ game }) => {
           {/* Botón 1: Calificar / Reseñar */}
           <button
             onClick={handleReviewClick}
-            className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-gradient-to-r from-brand-accent to-emerald-500 text-brand-bg hover:brightness-110 shadow-lg shadow-brand-accent/20 transition-all transform hover:-translate-y-0.5 active:translate-y-0"
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all transform hover:-translate-y-0.5 active:translate-y-0 ${
+              userReview
+                ? 'bg-brand-surface border border-brand-accent text-brand-accent shadow-lg shadow-brand-accent/20 hover:bg-brand-accent/10'
+                : 'bg-gradient-to-r from-brand-accent to-emerald-500 text-brand-bg hover:brightness-110 shadow-lg shadow-brand-accent/20'
+            }`}
           >
             <span>⭐</span>
-            <span>Calificar / Reseñar</span>
+            <span>
+              {userReview
+                ? `Tu nota: ${userReview.score} · Editar`
+                : 'Calificar / Reseñar'}
+            </span>
           </button>
 
           {/* Botón 2: Añadir al Diario */}

@@ -1,20 +1,29 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { getScoreColorInfo } from '@crithit/shared';
 
 interface ScoreSliderProps {
   initialValue?: number;
+  value?: number;
   onChange?: (value: number) => void;
   disabled?: boolean;
 }
 
 export const ScoreSlider: React.FC<ScoreSliderProps> = ({
   initialValue = 85,
+  value,
   onChange,
   disabled = false,
 }) => {
-  const [score, setScore] = useState<number>(initialValue);
+  const [score, setScore] = useState<number>(value ?? initialValue);
+
+  useEffect(() => {
+    if (value !== undefined) {
+      setScore(value);
+    }
+  }, [value]);
+
   const info = getScoreColorInfo(score);
 
   const handleSliderChange = (e: React.ChangeEvent<HTMLInputElement>) => {

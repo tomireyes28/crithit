@@ -1,12 +1,14 @@
 'use client';
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { apiClient } from '@/lib/api';
+import { useAuth } from '@/lib/auth-context';
 import { GameHero } from '@/components/games/detail/GameHero';
 import { GameActionDock } from '@/components/games/detail/GameActionDock';
 import { GameReviewsList } from '@/components/games/detail/GameReviewsList';
+import { ReviewModal } from '@/components/games/detail/ReviewModal';
 
 interface GameDetailData {
   id: string;
@@ -32,10 +34,14 @@ interface GameDetailData {
     id: string;
     score: number;
     title: string | null;
-    content: string | null;
-    hasSpoilers: boolean;
-    playedHours: number | null;
+    body?: string | null;
+    content?: string | null;
+    containsSpoilers?: boolean;
+    hasSpoilers?: boolean;
+    playedHours?: number | null;
+    playtimeAtReview?: number | null;
     likeCount: number;
+    hasLiked?: boolean;
     createdAt: string;
     user: {
       id: string;
@@ -57,45 +63,74 @@ interface GameDetailData {
 export default function GameDetailPage() {
   const params = useParams();
   const slug = params?.slug as string;
+  const { user } = useAuth();
 
   const [game, setGame] = useState<GameDetailData | null>(null);
+  const [userReview, setUserReview] = useState<any | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isSummaryExpanded, setIsSummaryExpanded] = useState(false);
+  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
+
+  // Cargar datos del juego
+  const fetchGameData = useCallback(async () => {
+    if (!slug) return;
+    try {
+      const data = await apiClient<GameDetailData>(`/games/${slug}`);
+      setGame(data);
+    } catch (err: any) {
+      setError(
+        err.statusCode === 404
+          ? 'No pudimos encontrar el juego solicitado'
+          : 'Error al cargar la información del juego',
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  }, [slug]);
 
   useEffect(() => {
-    if (!slug) return;
+    fetchGameData();
+  }, [fetchGameData]);
+
+  // Cargar reseña del usuario autenticado si existe
+  useEffect(() => {
+    if (!game?.id || !user) {
+      setUserReview(null);
+      return;
+    }
 
     let isMounted = true;
-    const fetchGame = async () => {
-      setIsLoading(true);
-      setError(null);
+    const fetchUserReview = async () => {
       try {
-        const data = await apiClient<GameDetailData>(`/games/${slug}`);
+        const myReview = await apiClient<any>(`/reviews/game/${game.id}/me`);
         if (isMounted) {
-          setGame(data);
+          setUserReview(myReview);
         }
-      } catch (err: any) {
+      } catch {
         if (isMounted) {
-          setError(
-            err.statusCode === 404
-              ? 'No pudimos encontrar el juego solicitado'
-              : 'Error al cargar la información del juego'
-          );
-        }
-      } finally {
-        if (isMounted) {
-          setIsLoading(false);
+          setUserReview(null);
         }
       }
     };
 
-    fetchGame();
+    fetchUserReview();
 
     return () => {
       isMounted = false;
     };
-  }, [slug]);
+  }, [game?.id, user]);
+
+  const handleReviewSaved = async (savedReview: any) => {
+    setUserReview(savedReview);
+    // Recargar datos actualizados del juego (scores y reviews)
+    await fetchGameData();
+  };
+
+  const handleReviewDeleted = async () => {
+    setUserReview(null);
+    await fetchGameData();
+  };
 
   // Estado de Carga: Skeleton Completo
   if (isLoading) {
@@ -172,8 +207,12 @@ export default function GameDetailPage() {
       {/* 1. Hero Cinematográfico con Backdrop y Scoreboard */}
       <GameHero game={game} />
 
-      {/* 2. Barra de Acciones Rápida (Letterboxd Style) */}
-      <GameActionDock game={game} />
+      {/* 2. Barra de Acciones Rápida (Letterboxd Style) con soporte de modal de reseña */}
+      <GameActionDock
+        game={game}
+        userReview={userReview}
+        onOpenReviewModal={() => setIsReviewModalOpen(true)}
+      />
 
       {/* 3. Contenido Principal: 2 Columnas */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
@@ -207,9 +246,7 @@ export default function GameDetailPage() {
               <GameReviewsList
                 gameName={game.name}
                 reviews={game.reviews}
-                onOpenReviewModal={() => {
-                  alert('El modal de reseña y calificación completa se activará en el Paso 10.');
-                }}
+                onOpenReviewModal={() => setIsReviewModalOpen(true)}
               />
             </section>
           </div>
@@ -313,6 +350,16 @@ export default function GameDetailPage() {
           </div>
         </div>
       </div>
+
+      {/* 4. Modal Interactivo de Calificación y Reseña */}
+      <ReviewModal
+        isOpen={isReviewModalOpen}
+        onClose={() => setIsReviewModalOpen(false)}
+        game={game}
+        existingReview={userReview}
+        onReviewSaved={handleReviewSaved}
+        onReviewDeleted={handleReviewDeleted}
+      />
     </div>
   );
 }

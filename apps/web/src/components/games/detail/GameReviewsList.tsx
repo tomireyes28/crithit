@@ -1,8 +1,10 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { ScoreBadge } from '@/components/ui/ScoreBadge';
+import { useAuth } from '@/lib/auth-context';
+import { apiClient } from '@/lib/api';
 
 export interface GameReviewsListProps {
   gameName: string;
@@ -10,10 +12,14 @@ export interface GameReviewsListProps {
     id: string;
     score: number;
     title: string | null;
-    content: string | null;
-    hasSpoilers: boolean;
-    playedHours: number | null;
+    body?: string | null;
+    content?: string | null;
+    containsSpoilers?: boolean;
+    hasSpoilers?: boolean;
+    playedHours?: number | null;
+    playtimeAtReview?: number | null;
     likeCount: number;
+    hasLiked?: boolean;
     createdAt: string;
     user: {
       id: string;
@@ -33,13 +39,71 @@ export const GameReviewsList: React.FC<GameReviewsListProps> = ({
   reviews,
   onOpenReviewModal,
 }) => {
+  const { user } = useAuth();
   const [revealedSpoilers, setRevealedSpoilers] = useState<Record<string, boolean>>({});
+  const [likesState, setLikesState] = useState<
+    Record<string, { hasLiked: boolean; likeCount: number }>
+  >({});
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+
+  // Sincronizar estado de likes cuando cambian las reseñas
+  useEffect(() => {
+    const initial: Record<string, { hasLiked: boolean; likeCount: number }> = {};
+    reviews.forEach((r) => {
+      initial[r.id] = {
+        hasLiked: Boolean(r.hasLiked),
+        likeCount: r.likeCount || 0,
+      };
+    });
+    setLikesState(initial);
+  }, [reviews]);
+
+  const showToast = (msg: string) => {
+    setToastMessage(msg);
+    setTimeout(() => setToastMessage(null), 3500);
+  };
 
   const toggleSpoiler = (reviewId: string) => {
     setRevealedSpoilers((prev) => ({
       ...prev,
       [reviewId]: !prev[reviewId],
     }));
+  };
+
+  const handleToggleLike = async (reviewId: string) => {
+    if (!user) {
+      showToast('Inicia sesión para dar me gusta a esta reseña ❤️');
+      return;
+    }
+
+    const current = likesState[reviewId] || { hasLiked: false, likeCount: 0 };
+    const nextLiked = !current.hasLiked;
+    const nextCount = nextLiked ? current.likeCount + 1 : Math.max(0, current.likeCount - 1);
+
+    // Actualización optimista inmediata
+    setLikesState((prev) => ({
+      ...prev,
+      [reviewId]: { hasLiked: nextLiked, likeCount: nextCount },
+    }));
+
+    try {
+      const res: any = await apiClient(`/reviews/${reviewId}/like`, {
+        method: 'POST',
+      });
+      if (res && typeof res.likeCount === 'number') {
+        setLikesState((prev) => ({
+          ...prev,
+          [reviewId]: { hasLiked: res.liked, likeCount: res.likeCount },
+        }));
+      }
+    } catch {
+      // Revertir en caso de error
+      setLikesState((prev) => ({
+        ...prev,
+        [reviewId]: current,
+      }));
+      showToast('No se pudo registrar el me gusta. Inténtalo de nuevo.');
+    }
   };
 
   const formatDate = (dateStr: string) => {
@@ -56,6 +120,18 @@ export const GameReviewsList: React.FC<GameReviewsListProps> = ({
 
   return (
     <div className="space-y-6">
+      {/* Toast informativo */}
+      {toastMessage && (
+        <div className="p-3 rounded-xl bg-brand-surface border border-brand-accent/40 text-xs font-semibold text-brand-text flex items-center justify-between gap-2 shadow-lg animate-fade-in">
+          <span>{toastMessage}</span>
+          {!user && (
+            <Link href="/login" className="text-brand-accent hover:underline flex-shrink-0">
+              Iniciar sesión
+            </Link>
+          )}
+        </div>
+      )}
+
       <div className="flex items-center justify-between pb-3 border-b border-brand-border/60">
         <div className="flex items-center gap-3">
           <h2 className="text-xl font-bold text-brand-text">Reseñas de la Comunidad</h2>
@@ -99,8 +175,15 @@ export const GameReviewsList: React.FC<GameReviewsListProps> = ({
         /* Feed de Reseñas */
         <div className="space-y-4">
           {reviews.map((rev) => {
-            const isSpoilerHidden = rev.hasSpoilers && !revealedSpoilers[rev.id];
+            const hasSpoilers = Boolean(rev.containsSpoilers || rev.hasSpoilers);
+            const isSpoilerHidden = hasSpoilers && !revealedSpoilers[rev.id];
             const isCritic = rev.user.role === 'CRITIC' || rev.user.criticTier !== null;
+            const contentText = rev.body || rev.content;
+            const hours = rev.playedHours ?? rev.playtimeAtReview;
+            const likeInfo = likesState[rev.id] || {
+              hasLiked: Boolean(rev.hasLiked),
+              likeCount: rev.likeCount || 0,
+            };
 
             return (
               <div
@@ -148,10 +231,10 @@ export const GameReviewsList: React.FC<GameReviewsListProps> = ({
                 </div>
 
                 {/* Horas jugadas si están especificadas */}
-                {rev.playedHours && (
+                {hours !== null && hours !== undefined && (
                   <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md text-xs font-medium bg-brand-bg/80 text-brand-muted border border-brand-border/40">
                     <span>⏱️</span>
-                    <span>{rev.playedHours} horas registradas</span>
+                    <span>{hours} horas registradas</span>
                   </div>
                 )}
 
@@ -161,7 +244,7 @@ export const GameReviewsList: React.FC<GameReviewsListProps> = ({
                 )}
 
                 {/* Contenido con manejo de spoilers */}
-                {rev.content && (
+                {contentText && (
                   <div className="relative">
                     {isSpoilerHidden ? (
                       <div
@@ -177,17 +260,25 @@ export const GameReviewsList: React.FC<GameReviewsListProps> = ({
                       </div>
                     ) : (
                       <p className="text-sm text-brand-text/90 leading-relaxed whitespace-pre-line">
-                        {rev.content}
+                        {contentText}
                       </p>
                     )}
                   </div>
                 )}
 
-                {/* Pie de la Reseña: Likes */}
+                {/* Pie de la Reseña: Likes interactivos */}
                 <div className="pt-2 flex items-center gap-4 text-xs text-brand-muted">
-                  <button className="flex items-center gap-1.5 hover:text-rose-400 transition-colors">
-                    <span>🤍</span>
-                    <span>{rev.likeCount} me gusta</span>
+                  <button
+                    onClick={() => handleToggleLike(rev.id)}
+                    className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg transition-colors ${
+                      likeInfo.hasLiked
+                        ? 'text-rose-400 bg-rose-500/15 border border-rose-500/30'
+                        : 'hover:text-rose-400 hover:bg-brand-bg/60'
+                    }`}
+                  >
+                    <span>{likeInfo.hasLiked ? '❤️' : '🤍'}</span>
+                    <span className="font-mono font-medium">{likeInfo.likeCount}</span>
+                    <span className="hidden sm:inline">me gusta</span>
                   </button>
                 </div>
               </div>
