@@ -5,6 +5,7 @@ import { AuthModule } from './modules/auth/auth.module';
 import { GamesModule } from './modules/games/games.module';
 import { ReviewsModule } from './modules/reviews/reviews.module';
 import { PlayLogsModule } from './modules/play-logs/play-logs.module';
+import { UsersModule } from './modules/users/users.module';
 import { AppController } from './app.controller';
 
 @Module({
@@ -18,6 +19,7 @@ import { AppController } from './app.controller';
     GamesModule,
     ReviewsModule,
     PlayLogsModule,
+    UsersModule,
   ],
   controllers: [AppController],
   providers: [],
