@@ -6,10 +6,11 @@ node_modules
 # testing
 coverage
 
-# next.js
+# next.js & nestjs builds
 .next/
 out/
 build
+dist/
 
 # turborepo
 .turbo

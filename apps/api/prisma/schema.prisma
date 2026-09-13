@@ -1,0 +1,573 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ═══════════════════════════════════════════
+// USUARIOS & AUTENTICACIÓN
+// ═══════════════════════════════════════════
+
+model User {
+  id               String      @id @default(cuid())
+  email            String      @unique
+  username         String      @unique
+  displayName      String
+  avatarUrl        String?
+  bannerUrl        String?
+  bio              String?     @db.Text
+  location         String?
+  website          String?
+
+  passwordHash     String?
+  googleId         String?     @unique
+  steamId          String?     @unique
+  emailVerified    Boolean     @default(false)
+
+  role             UserRole    @default(USER)
+  criticTier       CriticTier?
+  criticVerifiedAt DateTime?
+  criticBadge      String?
+
+  isPublic         Boolean     @default(true)
+
+  favoriteGames    UserFavoriteGame[]
+
+  reviews          Review[]
+  playLogs         PlayLog[]
+  lists            GameList[]
+  listLikes        ListLike[]
+  reviewLikes      ReviewLike[]
+  reviewComments   ReviewComment[]
+  notifications    Notification[]        @relation("recipient")
+  sentNotifications Notification[]       @relation("actor")
+
+  following        Follow[]              @relation("follower")
+  followers        Follow[]              @relation("following")
+
+  criticExamAttempts CriticExamAttempt[]
+
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+
+  @@index([username])
+  @@index([email])
+}
+
+enum UserRole {
+  USER
+  CRITIC
+  ADMIN
+  MODERATOR
+}
+
+enum CriticTier {
+  VERIFIED
+  EXPERT
+  MASTER
+}
+
+model UserFavoriteGame {
+  id       String @id @default(cuid())
+  userId   String
+  gameId   String
+  position Int
+
+  user     User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  game     Game   @relation(fields: [gameId], references: [id])
+
+  @@unique([userId, position])
+  @@unique([userId, gameId])
+}
+
+model Follow {
+  id          String   @id @default(cuid())
+  followerId  String
+  followingId String
+
+  follower    User     @relation("follower", fields: [followerId], references: [id], onDelete: Cascade)
+  following   User     @relation("following", fields: [followingId], references: [id], onDelete: Cascade)
+
+  createdAt   DateTime @default(now())
+
+  @@unique([followerId, followingId])
+  @@index([followerId])
+  @@index([followingId])
+}
+
+// ═══════════════════════════════════════════
+// JUEGOS (Catálogo & Caché Local de IGDB)
+// ═══════════════════════════════════════════
+
+model Game {
+  id                String       @id @default(cuid())
+  igdbId            Int          @unique
+  slug              String       @unique
+  name              String
+  summary           String?      @db.Text
+  storyline         String?      @db.Text
+
+  coverImageId      String?
+  backdropImageId   String?
+  screenshotIds     String[]
+  trailerUrls       String[]
+
+  firstReleaseDate  DateTime?
+  status            GameStatus?
+  category          GameCategory?
+
+  parentGameId      String?
+  parentGame        Game?        @relation("GameChildren", fields: [parentGameId], references: [id])
+  childGames        Game[]       @relation("GameChildren")
+
+  genres            GameGenre[]
+  platforms         GamePlatform[]
+  themes            GameTheme[]
+  gameModes         GameMode[]
+
+  developers        Company[]    @relation("GameDevelopers")
+  publishers        Company[]    @relation("GamePublishers")
+
+  franchiseId       String?
+  franchise         Franchise?   @relation(fields: [franchiseId], references: [id])
+
+  communityScore    Float?
+  communityCount    Int          @default(0)
+  criticScore       Float?
+  criticCount       Int          @default(0)
+  totalReviews      Int          @default(0)
+  recommendPercent  Float?
+  hypeCount         Int          @default(0)
+
+  esrbRating        String?
+  pegiRating        String?
+
+  hltbMainStory     Float?
+  hltbMainExtras    Float?
+  hltbCompletionist Float?
+
+  reviews           Review[]
+  playLogs          PlayLog[]
+  listEntries       GameListEntry[]
+  favoritedBy       UserFavoriteGame[]
+  news              NewsArticle[]
+
+  igdbUpdatedAt     DateTime?
+  lastSyncedAt      DateTime     @default(now())
+
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
+
+  @@index([name])
+  @@index([slug])
+  @@index([firstReleaseDate])
+  @@index([communityScore])
+  @@index([criticScore])
+}
+
+enum GameStatus {
+  RELEASED
+  ALPHA
+  BETA
+  EARLY_ACCESS
+  OFFLINE
+  CANCELLED
+  RUMORED
+}
+
+enum GameCategory {
+  MAIN_GAME
+  DLC
+  EXPANSION
+  BUNDLE
+  STANDALONE_EXPANSION
+  MOD
+  EPISODE
+  SEASON
+  REMAKE
+  REMASTER
+  PORT
+}
+
+// ═══════════════════════════════════════════
+// RESEÑAS & PUNTUACIÓN (0 - 100)
+// ═══════════════════════════════════════════
+
+model Review {
+  id               String          @id @default(cuid())
+  userId           String
+  gameId           String
+
+  score            Int             // Escala de 0 a 100
+  title            String?
+  body             String?         @db.Text
+
+  platform         String?
+  playtimeAtReview Float?
+  gameVersion      String?
+  containsSpoilers Boolean         @default(false)
+  recommends       Boolean?
+
+  isCriticReview   Boolean         @default(false)
+  criticTier       CriticTier?
+
+  likes            ReviewLike[]
+  comments         ReviewComment[]
+  likeCount        Int             @default(0)
+  commentCount     Int             @default(0)
+
+  isPublished      Boolean         @default(true)
+  isFeatured       Boolean         @default(false)
+
+  user             User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  game             Game            @relation(fields: [gameId], references: [id])
+
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+
+  @@unique([userId, gameId])
+  @@index([gameId, score])
+  @@index([gameId, isCriticReview])
+  @@index([userId])
+  @@index([createdAt])
+}
+
+model ReviewLike {
+  id        String   @id @default(cuid())
+  userId    String
+  reviewId  String
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  review    Review   @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+
+  @@unique([userId, reviewId])
+}
+
+model ReviewComment {
+  id        String          @id @default(cuid())
+  userId    String
+  reviewId  String
+  body      String          @db.Text
+
+  parentId  String?
+  parent    ReviewComment?  @relation("CommentReplies", fields: [parentId], references: [id])
+  replies   ReviewComment[] @relation("CommentReplies")
+
+  user      User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  review    Review          @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime        @default(now())
+  updatedAt DateTime        @updatedAt
+
+  @@index([reviewId])
+}
+
+// ═══════════════════════════════════════════
+// PLAY LOG (Diario de Juego)
+// ═══════════════════════════════════════════
+
+model PlayLog {
+  id          String     @id @default(cuid())
+  userId      String
+  gameId      String
+
+  status      PlayStatus
+
+  startedAt   DateTime?
+  finishedAt  DateTime?
+  logDate     DateTime   @default(now())
+
+  platform    String?
+  hoursPlayed Float?
+
+  isReplay    Boolean    @default(false)
+  replayCount Int        @default(0)
+
+  notes       String?    @db.Text
+
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  game        Game       @relation(fields: [gameId], references: [id])
+
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@index([userId, status])
+  @@index([userId, logDate])
+  @@index([gameId])
+}
+
+enum PlayStatus {
+  PLAYING
+  BACKLOG
+  COMPLETED
+  MASTERED
+  DROPPED
+  SHELVED
+  WISHLIST
+}
+
+// ═══════════════════════════════════════════
+// LISTAS PERSONALIZADAS
+// ═══════════════════════════════════════════
+
+model GameList {
+  id            String          @id @default(cuid())
+  userId        String
+  title         String
+  description   String?         @db.Text
+  coverImageUrl String?
+
+  isRanked      Boolean         @default(false)
+  isPublic      Boolean         @default(true)
+  tags          String[]
+
+  entries       GameListEntry[]
+  likes         ListLike[]
+  likeCount     Int             @default(0)
+  entryCount    Int             @default(0)
+
+  user          User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  @@index([userId])
+}
+
+model GameListEntry {
+  id       String   @id @default(cuid())
+  listId   String
+  gameId   String
+  position Int
+  note     String?
+
+  list     GameList @relation(fields: [listId], references: [id], onDelete: Cascade)
+  game     Game     @relation(fields: [gameId], references: [id])
+
+  @@unique([listId, gameId])
+  @@index([listId, position])
+}
+
+model ListLike {
+  id     String   @id @default(cuid())
+  userId String
+  listId String
+
+  user   User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  list   GameList @relation(fields: [listId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, listId])
+}
+
+// ═══════════════════════════════════════════
+// NOTICIAS
+// ═══════════════════════════════════════════
+
+model NewsArticle {
+  id          String        @id @default(cuid())
+  igdbPulseId Int?          @unique
+
+  title       String
+  summary     String?       @db.Text
+  url         String
+  imageUrl    String?
+  sourceName  String
+  sourceUrl   String?
+
+  games       Game[]
+
+  category    NewsCategory?
+
+  publishedAt DateTime
+  createdAt   DateTime      @default(now())
+
+  @@index([publishedAt])
+  @@index([category])
+}
+
+enum NewsCategory {
+  RELEASE
+  ANNOUNCEMENT
+  REVIEW
+  UPDATE_PATCH
+  DEAL
+  EVENT
+  OPINION
+}
+
+// ═══════════════════════════════════════════
+// EXAMEN DE CRÍTICOS
+// ═══════════════════════════════════════════
+
+model CriticExamAttempt {
+  id             String   @id @default(cuid())
+  userId         String
+  examType       ExamType
+
+  score          Int
+  passed         Boolean
+  totalQuestions Int
+  correctAnswers Int
+
+  answers        Json
+
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  attemptedAt    DateTime @default(now())
+
+  @@index([userId])
+}
+
+enum ExamType {
+  BASIC_CRITIC
+  EXPERT_CRITIC
+}
+
+model ExamQuestion {
+  id            String   @id @default(cuid())
+  examType      ExamType
+
+  question      String   @db.Text
+  options       Json
+  correctOption Int
+  explanation   String?  @db.Text
+  category      String
+  difficulty    Int      @default(1)
+
+  isActive      Boolean  @default(true)
+
+  createdAt     DateTime @default(now())
+}
+
+// ═══════════════════════════════════════════
+// NOTIFICACIONES
+// ═══════════════════════════════════════════
+
+model Notification {
+  id          String           @id @default(cuid())
+  recipientId String
+  actorId     String?
+
+  type        NotificationType
+  message     String
+
+  entityType  String?
+  entityId    String?
+
+  isRead      Boolean          @default(false)
+
+  recipient   User             @relation("recipient", fields: [recipientId], references: [id], onDelete: Cascade)
+  actor       User?            @relation("actor", fields: [actorId], references: [id])
+
+  createdAt   DateTime         @default(now())
+
+  @@index([recipientId, isRead])
+  @@index([recipientId, createdAt])
+}
+
+enum NotificationType {
+  NEW_FOLLOWER
+  REVIEW_LIKE
+  REVIEW_COMMENT
+  LIST_LIKE
+  MENTION
+  CRITIC_STATUS_CHANGE
+  GAME_RELEASE
+}
+
+// ═══════════════════════════════════════════
+// TAXONOMÍA
+// ═══════════════════════════════════════════
+
+model Genre {
+  id     String      @id @default(cuid())
+  igdbId Int         @unique
+  name   String      @unique
+  slug   String      @unique
+  games  GameGenre[]
+}
+
+model GameGenre {
+  gameId  String
+  genreId String
+  game    Game  @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  genre   Genre @relation(fields: [genreId], references: [id])
+
+  @@id([gameId, genreId])
+}
+
+model Platform {
+  id           String         @id @default(cuid())
+  igdbId       Int            @unique
+  name         String
+  slug         String         @unique
+  abbreviation String?
+  generation   Int?
+  games        GamePlatform[]
+}
+
+model GamePlatform {
+  gameId     String
+  platformId String
+  game       Game     @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  platform   Platform @relation(fields: [platformId], references: [id])
+
+  @@id([gameId, platformId])
+}
+
+model Theme {
+  id     String      @id @default(cuid())
+  igdbId Int         @unique
+  name   String      @unique
+  slug   String      @unique
+  games  GameTheme[]
+}
+
+model GameTheme {
+  gameId  String
+  themeId String
+  game    Game  @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  theme   Theme @relation(fields: [themeId], references: [id])
+
+  @@id([gameId, themeId])
+}
+
+model Mode {
+  id     String     @id @default(cuid())
+  igdbId Int        @unique
+  name   String     @unique
+  games  GameMode[]
+}
+
+model GameMode {
+  gameId String
+  modeId String
+  game   Game @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  mode   Mode @relation(fields: [modeId], references: [id])
+
+  @@id([gameId, modeId])
+}
+
+model Company {
+  id             String  @id @default(cuid())
+  igdbId         Int     @unique
+  name           String
+  slug           String  @unique
+  logoImageId    String?
+
+  developedGames Game[]  @relation("GameDevelopers")
+  publishedGames Game[]  @relation("GamePublishers")
+}
+
+model Franchise {
+  id     String @id @default(cuid())
+  igdbId Int    @unique
+  name   String
+  slug   String @unique
+  games  Game[]
+}
