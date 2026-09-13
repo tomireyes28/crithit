@@ -2,10 +2,25 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { Gamepad2, Search, Award, Sparkles, Menu, X } from 'lucide-react';
+import {
+  Gamepad2,
+  Search,
+  Award,
+  Sparkles,
+  Menu,
+  X,
+  User as UserIcon,
+  LogOut,
+  Bookmark,
+  MessageSquare,
+  ChevronDown,
+} from 'lucide-react';
+import { useAuth } from '@/lib/auth-context';
 
 export const Navbar = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [userDropdownOpen, setUserDropdownOpen] = useState(false);
+  const { user, logout } = useAuth();
 
   return (
     <nav className="sticky top-0 z-50 bg-brand-bg/85 backdrop-blur-md border-b border-brand-border/60 transition-colors">
@@ -66,7 +81,7 @@ export const Navbar = () => {
           {/* Search bar & Auth Actions */}
           <div className="hidden md:flex items-center gap-4">
             {/* Search Input */}
-            <div className="relative w-64">
+            <div className="relative w-60">
               <input
                 type="text"
                 placeholder="Buscar juegos, usuarios..."
@@ -75,20 +90,102 @@ export const Navbar = () => {
               <Search className="w-4 h-4 text-brand-muted absolute left-3 top-2.5" />
             </div>
 
-            {/* Auth Buttons */}
-            <Link
-              href="/login"
-              className="px-4 py-2 text-sm font-semibold text-brand-muted hover:text-white transition-colors"
-            >
-              Iniciar Sesión
-            </Link>
-            <Link
-              href="/register"
-              className="px-4 py-2 text-sm font-semibold text-white bg-brand-primary hover:bg-brand-primary-hover rounded-xl shadow-glow-primary transition-all duration-200 flex items-center gap-1.5"
-            >
-              <Sparkles className="w-4 h-4" />
-              Crear Cuenta
-            </Link>
+            {/* User Session Menu */}
+            {user ? (
+              <div className="relative">
+                <button
+                  onClick={() => setUserDropdownOpen(!userDropdownOpen)}
+                  className="flex items-center gap-2.5 px-3 py-1.5 rounded-xl bg-brand-card hover:bg-brand-surface border border-brand-border/80 transition-all text-left"
+                >
+                  <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-brand-primary to-brand-secondary flex items-center justify-center font-bold text-xs text-white uppercase shadow-sm">
+                    {user.avatarUrl ? (
+                      <img
+                        src={user.avatarUrl}
+                        alt={user.username}
+                        className="w-full h-full object-cover rounded-lg"
+                      />
+                    ) : (
+                      user.username.charAt(0)
+                    )}
+                  </div>
+                  <span className="text-sm font-semibold text-white max-w-[100px] truncate">
+                    {user.displayName || user.username}
+                  </span>
+                  {user.criticTier && (
+                    <span className="text-[10px] font-bold uppercase tracking-wider text-sky-400 bg-sky-500/20 px-1.5 py-0.5 rounded border border-sky-500/30">
+                      Critic
+                    </span>
+                  )}
+                  <ChevronDown className="w-4 h-4 text-brand-muted" />
+                </button>
+
+                {/* Dropdown menu */}
+                {userDropdownOpen && (
+                  <div className="absolute right-0 mt-2 w-52 bg-brand-card border border-brand-border rounded-xl shadow-2xl py-2 z-50">
+                    <div className="px-4 py-2 border-b border-brand-border/60">
+                      <p className="text-xs text-brand-muted">Conectado como</p>
+                      <p className="text-sm font-bold text-white truncate">@{user.username}</p>
+                    </div>
+
+                    <Link
+                      href={`/profile/${user.username}`}
+                      onClick={() => setUserDropdownOpen(false)}
+                      className="flex items-center gap-2.5 px-4 py-2 text-sm text-brand-muted hover:text-white hover:bg-brand-surface transition-colors"
+                    >
+                      <UserIcon className="w-4 h-4 text-brand-primary" />
+                      Mi Perfil
+                    </Link>
+
+                    <Link
+                      href={`/profile/${user.username}/reviews`}
+                      onClick={() => setUserDropdownOpen(false)}
+                      className="flex items-center gap-2.5 px-4 py-2 text-sm text-brand-muted hover:text-white hover:bg-brand-surface transition-colors"
+                    >
+                      <MessageSquare className="w-4 h-4 text-brand-secondary" />
+                      Mis Reseñas
+                    </Link>
+
+                    <Link
+                      href={`/profile/${user.username}/backlog`}
+                      onClick={() => setUserDropdownOpen(false)}
+                      className="flex items-center gap-2.5 px-4 py-2 text-sm text-brand-muted hover:text-white hover:bg-brand-surface transition-colors"
+                    >
+                      <Bookmark className="w-4 h-4 text-brand-tertiary" />
+                      Mi Backlog
+                    </Link>
+
+                    <div className="border-t border-brand-border/60 my-1" />
+
+                    <button
+                      onClick={() => {
+                        setUserDropdownOpen(false);
+                        logout();
+                      }}
+                      className="w-full text-left flex items-center gap-2.5 px-4 py-2 text-sm text-rose-400 hover:text-rose-300 hover:bg-rose-500/10 transition-colors"
+                    >
+                      <LogOut className="w-4 h-4" />
+                      Cerrar Sesión
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="flex items-center gap-2">
+                <Link
+                  href="/login"
+                  className="px-4 py-2 text-sm font-semibold text-brand-muted hover:text-white transition-colors"
+                >
+                  Iniciar Sesión
+                </Link>
+                <Link
+                  href="/register"
+                  className="px-4 py-2 text-sm font-semibold text-white bg-brand-primary hover:bg-brand-primary-hover rounded-xl shadow-glow-primary transition-all duration-200 flex items-center gap-1.5"
+                >
+                  <Sparkles className="w-4 h-4" />
+                  Crear Cuenta
+                </Link>
+              </div>
+            )}
           </div>
 
           {/* Mobile menu toggle */}
@@ -149,21 +246,48 @@ export const Navbar = () => {
           >
             Examen Crítico
           </Link>
-          <div className="pt-3 border-t border-brand-border flex gap-2">
-            <Link
-              href="/login"
-              onClick={() => setMobileMenuOpen(false)}
-              className="flex-1 text-center py-2 text-sm font-semibold rounded-lg bg-brand-surface text-brand-text hover:bg-brand-surface/80"
-            >
-              Iniciar Sesión
-            </Link>
-            <Link
-              href="/register"
-              onClick={() => setMobileMenuOpen(false)}
-              className="flex-1 text-center py-2 text-sm font-semibold rounded-lg bg-brand-primary text-white"
-            >
-              Registrarse
-            </Link>
+
+          <div className="pt-3 border-t border-brand-border">
+            {user ? (
+              <div className="space-y-2">
+                <div className="px-3 py-1 text-sm font-bold text-white">
+                  @{user.username}
+                </div>
+                <Link
+                  href={`/profile/${user.username}`}
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="block px-3 py-2 text-sm text-brand-muted hover:text-white"
+                >
+                  Mi Perfil
+                </Link>
+                <button
+                  onClick={() => {
+                    setMobileMenuOpen(false);
+                    logout();
+                  }}
+                  className="w-full text-left px-3 py-2 text-sm text-rose-400 hover:text-rose-300"
+                >
+                  Cerrar Sesión
+                </button>
+              </div>
+            ) : (
+              <div className="flex gap-2">
+                <Link
+                  href="/login"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex-1 text-center py-2 text-sm font-semibold rounded-lg bg-brand-surface text-brand-text hover:bg-brand-surface/80"
+                >
+                  Iniciar Sesión
+                </Link>
+                <Link
+                  href="/register"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex-1 text-center py-2 text-sm font-semibold rounded-lg bg-brand-primary text-white"
+                >
+                  Registrarse
+                </Link>
+              </div>
+            )}
           </div>
         </div>
       )}
