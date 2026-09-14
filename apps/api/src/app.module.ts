@@ -9,6 +9,7 @@ import { UsersModule } from './modules/users/users.module';
 import { ListsModule } from './modules/lists/lists.module';
 import { ActivityModule } from './modules/activity/activity.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
+import { CriticsModule } from './modules/critics/critics.module';
 import { AppController } from './app.controller';
 
 @Module({
@@ -26,6 +27,7 @@ import { AppController } from './app.controller';
     ListsModule,
     ActivityModule,
     NotificationsModule,
+    CriticsModule,
   ],
   controllers: [AppController],
   providers: [],
