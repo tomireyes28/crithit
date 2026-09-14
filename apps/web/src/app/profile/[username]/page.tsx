@@ -10,7 +10,9 @@ import { FavoriteFour } from '@/components/profile/FavoriteFour';
 import { ScoreHistogram } from '@/components/profile/ScoreHistogram';
 import { FavoriteSelectorModal } from '@/components/profile/FavoriteSelectorModal';
 import { EditProfileModal } from '@/components/profile/EditProfileModal';
+import { FollowersModal } from '@/components/profile/FollowersModal';
 import { ListCard } from '@/components/lists/ListCard';
+import { UserPlus, UserCheck } from 'lucide-react';
 import { PLAY_STATUS_MAP, PlayStatus } from '@crithit/shared';
 
 interface ProfileData {
@@ -101,6 +103,12 @@ export default function UserProfilePage() {
   const [activeTab, setActiveTab] = useState<'reviews' | 'diary' | 'lists'>('reviews');
   const [userLists, setUserLists] = useState<any[]>([]);
   const [isLoadingLists, setIsLoadingLists] = useState(false);
+  const [isFollowing, setIsFollowing] = useState(false);
+  const [isFollowLoading, setIsFollowLoading] = useState(false);
+  const [followersModalConfig, setFollowersModalConfig] = useState<{
+    isOpen: boolean;
+    type: 'followers' | 'following';
+  }>({ isOpen: false, type: 'followers' });
 
   const [isFavoritesModalOpen, setIsFavoritesModalOpen] = useState(false);
   const [isEditProfileModalOpen, setIsEditProfileModalOpen] = useState(false);
@@ -128,6 +136,48 @@ export default function UserProfilePage() {
   useEffect(() => {
     fetchProfile();
   }, [fetchProfile]);
+
+  useEffect(() => {
+    if (username && currentUser && !isOwner) {
+      apiClient<any>(`/users/${username}/follow-status`)
+        .then((res) => setIsFollowing(Boolean(res.isFollowing)))
+        .catch(() => setIsFollowing(false));
+    }
+  }, [username, currentUser, isOwner]);
+
+  const handleToggleFollow = async () => {
+    if (!currentUser) {
+      alert('Inicia sesión para seguir a este usuario');
+      return;
+    }
+    if (isFollowLoading || !profile) return;
+    setIsFollowLoading(true);
+
+    const nextState = !isFollowing;
+    setIsFollowing(nextState);
+    setProfile((prev) =>
+      prev
+        ? {
+            ...prev,
+            stats: {
+              ...prev.stats,
+              followersCount: nextState
+                ? (prev.stats.followersCount || 0) + 1
+                : Math.max(0, (prev.stats.followersCount || 1) - 1),
+            },
+          }
+        : null,
+    );
+
+    try {
+      const res: any = await apiClient(`/users/${username}/follow`, { method: 'POST' });
+      setIsFollowing(res.isFollowing);
+    } catch {
+      setIsFollowing(!nextState);
+    } finally {
+      setIsFollowLoading(false);
+    }
+  };
 
   useEffect(() => {
     if (activeTab === 'lists' && username) {
@@ -301,17 +351,60 @@ export default function UserProfilePage() {
                   <span>📅</span> Miembro desde {formatJoinDate(profile.user.createdAt)}
                 </span>
               </div>
+
+              {/* Contadores de Seguidores y Siguiendo */}
+              <div className="flex items-center gap-4 text-xs mt-3">
+                <button
+                  type="button"
+                  onClick={() => setFollowersModalConfig({ isOpen: true, type: 'followers' })}
+                  className="hover:text-brand-accent transition-colors flex items-center gap-1.5"
+                >
+                  <span className="font-bold text-white font-mono">{profile.stats.followersCount || 0}</span>
+                  <span className="text-brand-muted">seguidores</span>
+                </button>
+                <span className="text-brand-border/60">•</span>
+                <button
+                  type="button"
+                  onClick={() => setFollowersModalConfig({ isOpen: true, type: 'following' })}
+                  className="hover:text-brand-accent transition-colors flex items-center gap-1.5"
+                >
+                  <span className="font-bold text-white font-mono">{profile.stats.followingCount || 0}</span>
+                  <span className="text-brand-muted">siguiendo</span>
+                </button>
+              </div>
             </div>
           </div>
 
-          {/* Botón de Editar Perfil */}
-          {isOwner && (
+          {/* Botón de Acción: Editar Perfil o Seguir */}
+          {isOwner ? (
             <button
               onClick={() => setIsEditProfileModalOpen(true)}
               className="px-4 py-2 rounded-xl text-xs font-bold bg-brand-surface hover:bg-brand-border/60 border border-brand-border text-brand-text transition-colors flex items-center gap-1.5"
             >
               <span>⚙️</span>
               <span>Editar Perfil</span>
+            </button>
+          ) : (
+            <button
+              disabled={isFollowLoading}
+              onClick={handleToggleFollow}
+              className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${
+                isFollowing
+                  ? 'bg-brand-surface hover:bg-rose-500/10 border border-brand-border hover:border-rose-500/40 text-brand-muted hover:text-rose-400'
+                  : 'bg-brand-accent text-brand-bg hover:brightness-110 shadow-lg shadow-brand-accent/20'
+              }`}
+            >
+              {isFollowing ? (
+                <>
+                  <UserCheck className="w-3.5 h-3.5 text-emerald-400" />
+                  <span>Siguiendo</span>
+                </>
+              ) : (
+                <>
+                  <UserPlus className="w-3.5 h-3.5" />
+                  <span>Seguir</span>
+                </>
+              )}
             </button>
           )}
         </div>
@@ -575,6 +668,16 @@ export default function UserProfilePage() {
           />
         </>
       )}
+
+      {/* Modal de Seguidores / Siguiendo */}
+      <FollowersModal
+        isOpen={followersModalConfig.isOpen}
+        onClose={() =>
+          setFollowersModalConfig((prev) => ({ ...prev, isOpen: false }))
+        }
+        username={profile.user.username}
+        type={followersModalConfig.type}
+      />
     </div>
   );
 }

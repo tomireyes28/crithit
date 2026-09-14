@@ -265,4 +265,198 @@ export class UsersService {
 
     return updated;
   }
+
+  /**
+   * Seguir o dejar de seguir a un usuario (Toggle)
+   */
+  async toggleFollow(followerId: string, targetUsername: string) {
+    const targetUser = await this.prisma.user.findUnique({
+      where: { username: targetUsername },
+      select: { id: true, username: true },
+    });
+
+    if (!targetUser) {
+      throw new NotFoundException(`Usuario @${targetUsername} no encontrado`);
+    }
+
+    if (followerId === targetUser.id) {
+      throw new BadRequestException('No puedes seguirte a ti mismo');
+    }
+
+    const existingFollow = await this.prisma.follow.findUnique({
+      where: {
+        followerId_followingId: {
+          followerId,
+          followingId: targetUser.id,
+        },
+      },
+    });
+
+    if (existingFollow) {
+      await this.prisma.follow.delete({
+        where: {
+          followerId_followingId: {
+            followerId,
+            followingId: targetUser.id,
+          },
+        },
+      });
+
+      const followerCount = await this.prisma.follow.count({
+        where: { followingId: targetUser.id },
+      });
+
+      return { isFollowing: false, followerCount };
+    } else {
+      await this.prisma.follow.create({
+        data: {
+          followerId,
+          followingId: targetUser.id,
+        },
+      });
+
+      const followerCount = await this.prisma.follow.count({
+        where: { followingId: targetUser.id },
+      });
+
+      return { isFollowing: true, followerCount };
+    }
+  }
+
+  /**
+   * Obtener el estado de seguimiento entre el usuario actual y el objetivo
+   */
+  async getFollowStatus(targetUsername: string, currentUserId?: string) {
+    const targetUser = await this.prisma.user.findUnique({
+      where: { username: targetUsername },
+      select: { id: true },
+    });
+
+    if (!targetUser) {
+      throw new NotFoundException(`Usuario @${targetUsername} no encontrado`);
+    }
+
+    const [followerCount, followingCount, isFollowing] = await Promise.all([
+      this.prisma.follow.count({ where: { followingId: targetUser.id } }),
+      this.prisma.follow.count({ where: { followerId: targetUser.id } }),
+      currentUserId && currentUserId !== targetUser.id
+        ? this.prisma.follow
+            .findUnique({
+              where: {
+                followerId_followingId: {
+                  followerId: currentUserId,
+                  followingId: targetUser.id,
+                },
+              },
+            })
+            .then((res) => Boolean(res))
+        : Promise.resolve(false),
+    ]);
+
+    return {
+      isFollowing,
+      followerCount,
+      followingCount,
+    };
+  }
+
+  /**
+   * Obtener lista de seguidores de un usuario
+   */
+  async getFollowers(targetUsername: string, currentUserId?: string) {
+    const targetUser = await this.prisma.user.findUnique({
+      where: { username: targetUsername },
+      select: { id: true },
+    });
+
+    if (!targetUser) {
+      throw new NotFoundException(`Usuario @${targetUsername} no encontrado`);
+    }
+
+    const followers = await this.prisma.follow.findMany({
+      where: { followingId: targetUser.id },
+      orderBy: { createdAt: 'desc' },
+      include: {
+        follower: {
+          select: {
+            id: true,
+            username: true,
+            displayName: true,
+            avatarUrl: true,
+            bio: true,
+            role: true,
+            criticTier: true,
+          },
+        },
+      },
+    });
+
+    let myFollowingIds = new Set<string>();
+    if (currentUserId) {
+      const myFollows = await this.prisma.follow.findMany({
+        where: {
+          followerId: currentUserId,
+          followingId: { in: followers.map((f) => f.follower.id) },
+        },
+        select: { followingId: true },
+      });
+      myFollowingIds = new Set(myFollows.map((f) => f.followingId));
+    }
+
+    return followers.map((f) => ({
+      ...f.follower,
+      isFollowing: myFollowingIds.has(f.follower.id),
+      followedAt: f.createdAt,
+    }));
+  }
+
+  /**
+   * Obtener lista de usuarios a los que sigue un usuario
+   */
+  async getFollowing(targetUsername: string, currentUserId?: string) {
+    const targetUser = await this.prisma.user.findUnique({
+      where: { username: targetUsername },
+      select: { id: true },
+    });
+
+    if (!targetUser) {
+      throw new NotFoundException(`Usuario @${targetUsername} no encontrado`);
+    }
+
+    const followings = await this.prisma.follow.findMany({
+      where: { followerId: targetUser.id },
+      orderBy: { createdAt: 'desc' },
+      include: {
+        following: {
+          select: {
+            id: true,
+            username: true,
+            displayName: true,
+            avatarUrl: true,
+            bio: true,
+            role: true,
+            criticTier: true,
+          },
+        },
+      },
+    });
+
+    let myFollowingIds = new Set<string>();
+    if (currentUserId) {
+      const myFollows = await this.prisma.follow.findMany({
+        where: {
+          followerId: currentUserId,
+          followingId: { in: followings.map((f) => f.following.id) },
+        },
+        select: { followingId: true },
+      });
+      myFollowingIds = new Set(myFollows.map((f) => f.followingId));
+    }
+
+    return followings.map((f) => ({
+      ...f.following,
+      isFollowing: myFollowingIds.has(f.following.id),
+      followedAt: f.createdAt,
+    }));
+  }
 }
