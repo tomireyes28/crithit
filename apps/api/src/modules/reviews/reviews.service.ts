@@ -5,12 +5,16 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
+import { NotificationsService } from '../notifications/notifications.service';
 import { CreateReviewDto, UpdateReviewDto, ReviewQueryDto } from './dto/review.dto';
 import { Prisma } from '@prisma/client';
 
 @Injectable()
 export class ReviewsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly notificationsService: NotificationsService,
+  ) {}
 
   /**
    * Crea o actualiza (upsert) una reseña para un juego por el usuario autenticado.
@@ -369,6 +373,11 @@ export class ReviewsService {
   async toggleLike(userId: string, reviewId: string) {
     const review = await this.prisma.review.findUnique({
       where: { id: reviewId },
+      include: {
+        game: {
+          select: { id: true, name: true, slug: true },
+        },
+      },
     });
 
     if (!review) {
@@ -417,6 +426,22 @@ export class ReviewsService {
           data: { likeCount: { increment: 1 } },
         }),
       ]);
+
+      // Disparar notificación al autor de la reseña (si no es él mismo)
+      if (review.userId !== userId) {
+        await this.notificationsService
+          .createNotification({
+            recipientId: review.userId,
+            actorId: userId,
+            type: 'REVIEW_LIKE',
+            message: review.game?.name
+              ? `le ha gustado tu reseña de ${review.game.name}`
+              : 'le ha gustado tu reseña',
+            entityType: 'REVIEW',
+            entityId: review.id,
+          })
+          .catch(() => {});
+      }
 
       const updated = await this.prisma.review.findUnique({
         where: { id: reviewId },

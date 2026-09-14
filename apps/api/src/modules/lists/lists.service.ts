@@ -5,6 +5,7 @@ import {
   ConflictException,
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
+import { NotificationsService } from '../notifications/notifications.service';
 import {
   CreateListDto,
   UpdateListDto,
@@ -16,7 +17,10 @@ import {
 
 @Injectable()
 export class ListsService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly notificationsService: NotificationsService,
+  ) {}
 
   /**
    * Crear una nueva lista de videojuegos con entradas iniciales opcionales
@@ -703,7 +707,7 @@ export class ListsService {
   async toggleLike(userId: string, listId: string) {
     const list = await this.prisma.gameList.findUnique({
       where: { id: listId },
-      select: { id: true, isPublic: true, userId: true },
+      select: { id: true, title: true, isPublic: true, userId: true },
     });
 
     if (!list) {
@@ -757,6 +761,20 @@ export class ListsService {
           select: { likeCount: true },
         }),
       ]);
+
+      // Notificar al creador de la lista si no es el mismo usuario
+      if (list.userId !== userId) {
+        await this.notificationsService
+          .createNotification({
+            recipientId: list.userId,
+            actorId: userId,
+            type: 'LIST_LIKE',
+            message: list.title ? `le ha gustado tu lista "${list.title}"` : 'le ha gustado tu lista',
+            entityType: 'LIST',
+            entityId: list.id,
+          })
+          .catch(() => {});
+      }
 
       return { hasLiked: true, likeCount: updatedList.likeCount };
     }

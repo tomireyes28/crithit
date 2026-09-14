@@ -15,8 +15,10 @@ import {
   Bookmark,
   MessageSquare,
   ChevronDown,
+  Bell,
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
+import { NotificationDropdown } from '@/components/notifications/NotificationDropdown';
 
 export const Navbar = () => {
   const router = useRouter();
@@ -116,6 +118,9 @@ export const Navbar = () => {
               <Search className="w-4 h-4 text-brand-muted absolute left-3 top-2.5" />
             </form>
 
+            {/* Notification Bell & Dropdown */}
+            {user && <NotificationDropdown />}
+
             {/* User Session Menu */}
             {user ? (
               <div className="relative">
@@ -160,6 +165,15 @@ export const Navbar = () => {
                     >
                       <UserIcon className="w-4 h-4 text-brand-primary" />
                       Mi Perfil
+                    </Link>
+
+                    <Link
+                      href="/notifications"
+                      onClick={() => setUserDropdownOpen(false)}
+                      className="flex items-center gap-2.5 px-4 py-2 text-sm text-brand-muted hover:text-white hover:bg-brand-surface transition-colors"
+                    >
+                      <Bell className="w-4 h-4 text-brand-primary" />
+                      Notificaciones
                     </Link>
 
                     <Link
@@ -310,6 +324,14 @@ export const Navbar = () => {
                   className="block px-3 py-2 text-sm text-brand-muted hover:text-white"
                 >
                   Mi Perfil
+                </Link>
+                <Link
+                  href="/notifications"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="flex items-center justify-between px-3 py-2 text-sm text-brand-muted hover:text-white"
+                >
+                  <span>Notificaciones</span>
+                  <Bell className="w-4 h-4 text-brand-primary" />
                 </Link>
                 <button
                   onClick={() => {

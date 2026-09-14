@@ -4,11 +4,15 @@ import {
   BadRequestException,
 } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
+import { NotificationsService } from '../notifications/notifications.service';
 import { UpdateProfileDto, SetFavoritesDto } from './dto/users.dto';
 
 @Injectable()
 export class UsersService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly notificationsService: NotificationsService,
+  ) {}
 
   /**
    * Obtiene el perfil público completo de un usuario por su nombre de usuario.
@@ -314,6 +318,18 @@ export class UsersService {
           followingId: targetUser.id,
         },
       });
+
+      // Disparar notificación al usuario seguido
+      await this.notificationsService
+        .createNotification({
+          recipientId: targetUser.id,
+          actorId: followerId,
+          type: 'NEW_FOLLOWER',
+          message: 'ha comenzado a seguirte',
+          entityType: 'USER',
+          entityId: targetUser.id,
+        })
+        .catch(() => {});
 
       const followerCount = await this.prisma.follow.count({
         where: { followingId: targetUser.id },
