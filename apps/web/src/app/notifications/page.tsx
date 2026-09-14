@@ -21,6 +21,7 @@ import {
 import { apiClient } from '@/lib/api';
 import { useAuth } from '@/lib/auth-context';
 import { NotificationItem } from '@/components/notifications/NotificationDropdown';
+import { NotificationSkeleton } from '@/components/notifications/NotificationSkeleton';
 
 interface NotificationsResponse {
   notifications: NotificationItem[];
@@ -245,9 +246,10 @@ export default function NotificationsPage() {
         {/* Listado de Notificaciones */}
         <div className="space-y-3">
           {isLoading ? (
-            <div className="py-20 flex flex-col items-center justify-center gap-3">
-              <div className="w-8 h-8 border-2 border-brand-primary border-t-transparent rounded-full animate-spin" />
-              <span className="text-sm text-brand-muted">Cargando tus notificaciones...</span>
+            <div className="space-y-3">
+              {[...Array(6)].map((_, i) => (
+                <NotificationSkeleton key={i} />
+              ))}
             </div>
           ) : notifications.length === 0 ? (
             <div className="p-12 rounded-3xl bg-brand-surface/40 border border-brand-border/50 text-center flex flex-col items-center justify-center">

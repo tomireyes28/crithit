@@ -34,6 +34,14 @@ export class ReviewsController {
     );
   }
 
+  @Get()
+  @ApiOperation({ summary: 'Obtener feed global de reseñas de la comunidad' })
+  @ApiResponse({ status: 200, description: 'Lista paginada de reseñas comunitarias' })
+  async findAll(@Query() query: ReviewQueryDto, @Req() req: any) {
+    const userId = req.user?.id;
+    return this.reviewsService.findAll(query, userId);
+  }
+
   @Get('game/:gameId')
   @ApiOperation({ summary: 'Obtener reseñas paginadas de un videojuego' })
   @ApiResponse({ status: 200, description: 'Lista paginada de opiniones' })

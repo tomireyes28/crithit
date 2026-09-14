@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { ScoreBadge } from '@/components/ui/ScoreBadge';
 import { Gamepad2, Calendar } from 'lucide-react';
 import { GameSummary } from '@crithit/shared';
+import { motion } from 'framer-motion';
 
 interface GameCardProps {
   game: GameSummary;
@@ -27,13 +28,24 @@ export const GameCard: React.FC<GameCardProps> = ({ game }) => {
         ? game.criticScore
         : game.metacriticScore;
 
+  const isMasterpiece = displayScore !== null && displayScore !== undefined && displayScore >= 90;
   const coverSrc = !imgError && game.coverUrl ? game.coverUrl : null;
 
   return (
-    <Link
-      href={`/games/${game.slug}`}
-      className="group relative flex flex-col rounded-2xl bg-brand-card/70 border border-brand-border/60 overflow-hidden transition-all duration-300 hover:-translate-y-1.5 hover:border-brand-secondary/60 hover:shadow-[0_8px_30px_rgba(0,240,255,0.18)]"
+    <motion.div
+      whileHover={{ y: -6, scale: 1.02 }}
+      whileTap={{ scale: 0.985 }}
+      transition={{ type: 'spring', stiffness: 380, damping: 24 }}
+      className="h-full"
     >
+      <Link
+        href={`/games/${game.slug}`}
+        className={`group relative flex flex-col h-full rounded-2xl bg-brand-card/75 border border-brand-border/60 overflow-hidden transition-all duration-300 ${
+          isMasterpiece
+            ? 'hover:border-emerald-400/70 hover:shadow-[0_10px_35px_rgba(0,230,118,0.22)]'
+            : 'hover:border-brand-secondary/70 hover:shadow-[0_10px_35px_rgba(0,210,255,0.2)]'
+        }`}
+      >
       {/* Contenedor de Carátula con Proporción Póster */}
       <div className="relative aspect-[3/4] w-full overflow-hidden bg-brand-surface">
         {coverSrc ? (
@@ -119,5 +131,6 @@ export const GameCard: React.FC<GameCardProps> = ({ game }) => {
         )}
       </div>
     </Link>
+  </motion.div>
   );
 };

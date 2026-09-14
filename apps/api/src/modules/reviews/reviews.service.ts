@@ -454,4 +454,121 @@ export class ReviewsService {
       };
     }
   }
+
+  /**
+   * Obtiene todas las reseñas de la plataforma con filtros y ordenamiento para el feed comunitario.
+   */
+  async findAll(query: ReviewQueryDto, currentUserId?: string) {
+    const page = Math.max(1, Number(query.page) || 1);
+    const limit = Math.min(50, Math.max(1, Number(query.limit) || 12));
+    const skip = (page - 1) * limit;
+
+    const where: Prisma.ReviewWhereInput = {
+      isPublished: true,
+    };
+
+    if (query.criticOnly) {
+      where.isCriticReview = true;
+    }
+
+    if (query.search && query.search.trim().length > 0) {
+      const s = query.search.trim();
+      where.OR = [
+        { title: { contains: s, mode: 'insensitive' } },
+        { body: { contains: s, mode: 'insensitive' } },
+        { game: { name: { contains: s, mode: 'insensitive' } } },
+      ];
+    }
+
+    let orderBy: Prisma.ReviewOrderByWithRelationInput[] = [];
+    switch (query.sort) {
+      case 'recent':
+        orderBy = [{ createdAt: 'desc' }];
+        break;
+      case 'highest':
+        orderBy = [{ score: 'desc' }, { createdAt: 'desc' }];
+        break;
+      case 'lowest':
+        orderBy = [{ score: 'asc' }, { createdAt: 'desc' }];
+        break;
+      case 'popular':
+      default:
+        orderBy = [{ likeCount: 'desc' }, { createdAt: 'desc' }];
+        break;
+    }
+
+    const [items, total] = await Promise.all([
+      this.prisma.review.findMany({
+        where,
+        orderBy,
+        skip,
+        take: limit,
+        include: {
+          user: {
+            select: {
+              id: true,
+              username: true,
+              displayName: true,
+              avatarUrl: true,
+              role: true,
+              criticTier: true,
+              criticBadge: true,
+            },
+          },
+          game: {
+            select: {
+              id: true,
+              name: true,
+              slug: true,
+              coverUrl: true,
+              firstReleaseDate: true,
+              communityScore: true,
+              criticScore: true,
+              platforms: true,
+            },
+          },
+          likes: currentUserId
+            ? {
+                where: { userId: currentUserId },
+                select: { id: true },
+              }
+            : false,
+        },
+      }),
+      this.prisma.review.count({ where }),
+    ]);
+
+    const formatted = items.map((rev: any) => ({
+      id: rev.id,
+      userId: rev.userId,
+      gameId: rev.gameId,
+      score: rev.score,
+      title: rev.title,
+      body: rev.body,
+      content: rev.body,
+      platform: rev.platform,
+      playtimeAtReview: rev.playtimeAtReview,
+      playedHours: rev.playtimeAtReview,
+      containsSpoilers: rev.containsSpoilers,
+      hasSpoilers: rev.containsSpoilers,
+      recommends: rev.recommends,
+      isCriticReview: rev.isCriticReview,
+      criticTier: rev.criticTier,
+      likeCount: rev.likeCount,
+      isLiked: Boolean(rev.likes && rev.likes.length > 0),
+      createdAt: rev.createdAt,
+      updatedAt: rev.updatedAt,
+      user: rev.user,
+      game: rev.game,
+    }));
+
+    return {
+      items: formatted,
+      total,
+      page,
+      limit,
+      totalPages: Math.ceil(total / limit),
+      hasMore: page * limit < total,
+    };
+  }
 }

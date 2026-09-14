@@ -3,7 +3,8 @@
 import React, { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Gamepad2, Mail, Lock, ArrowRight, AlertCircle, Loader2 } from 'lucide-react';
+import { Gamepad2, Mail, Lock, ArrowRight, AlertCircle, Loader2, Eye, EyeOff } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { useAuth } from '@/lib/auth-context';
 
 function LoginForm() {
@@ -13,6 +14,7 @@ function LoginForm() {
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -49,7 +51,12 @@ function LoginForm() {
   };
 
   return (
-    <div className="max-w-md w-full space-y-8 bg-brand-card border border-brand-border/80 p-8 sm:p-10 rounded-3xl shadow-2xl relative overflow-hidden">
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.35, ease: 'easeOut' }}
+      className="max-w-md w-full space-y-8 bg-brand-card/90 backdrop-blur-xl border border-brand-border/80 p-8 sm:p-10 rounded-3xl shadow-2xl relative overflow-hidden"
+    >
       {/* Decorative Top Glow */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-48 h-1 bg-gradient-to-r from-transparent via-brand-primary to-transparent" />
 
@@ -140,21 +147,33 @@ function LoginForm() {
           </div>
           <div className="relative">
             <input
-              type="password"
+              type={showPassword ? 'text' : 'password'}
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
-              className="w-full bg-brand-surface border border-brand-border rounded-xl pl-10 pr-4 py-2.5 text-sm text-white placeholder-brand-muted focus:outline-none focus:border-brand-primary focus:ring-1 focus:ring-brand-primary transition-all"
+              className="w-full bg-brand-surface border border-brand-border rounded-xl pl-10 pr-11 py-2.5 text-sm text-white placeholder-brand-muted focus:outline-none focus:border-brand-primary focus:ring-1 focus:ring-brand-primary transition-all"
             />
             <Lock className="w-4 h-4 text-brand-muted absolute left-3.5 top-3.5" />
+            <button
+              type="button"
+              onClick={() => setShowPassword(!showPassword)}
+              className="absolute right-3.5 top-3 text-brand-muted hover:text-white transition-colors p-0.5 rounded-lg focus:outline-none"
+              aria-label={showPassword ? 'Ocultar contraseña' : 'Ver contraseña'}
+            >
+              {showPassword ? (
+                <EyeOff className="w-4 h-4" />
+              ) : (
+                <Eye className="w-4 h-4" />
+              )}
+            </button>
           </div>
         </div>
 
         <button
           type="submit"
           disabled={isSubmitting}
-          className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-bold text-white bg-brand-primary hover:bg-brand-primary-hover shadow-glow-primary disabled:opacity-50 disabled:cursor-not-allowed transition-all text-sm mt-6"
+          className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-bold text-white bg-brand-primary hover:bg-brand-primary-hover shadow-glow-primary disabled:opacity-50 disabled:cursor-not-allowed transition-all text-sm mt-6 active:scale-[0.99]"
         >
           {isSubmitting ? (
             <>
@@ -177,7 +196,7 @@ function LoginForm() {
           Crea una cuenta gratis
         </Link>
       </p>
-    </div>
+    </motion.div>
   );
 }
 

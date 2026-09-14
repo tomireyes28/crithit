@@ -6,14 +6,18 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import {
   Bell,
+  Check,
   CheckCheck,
+  Trash2,
+  ExternalLink,
+  MessageSquare,
   UserPlus,
   Heart,
   Layers,
   Sparkles,
-  ExternalLink,
-  Trash2,
+  Award,
 } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { apiClient } from '@/lib/api';
 import { useAuth } from '@/lib/auth-context';
 
@@ -225,8 +229,15 @@ export const NotificationDropdown: React.FC = () => {
       </button>
 
       {/* Popover Dropdown */}
-      {isOpen && (
-        <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-brand-card/95 backdrop-blur-xl border border-brand-border/90 rounded-2xl shadow-2xl z-50 overflow-hidden flex flex-col max-h-[520px]">
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95, y: -6 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.95, y: -6 }}
+            transition={{ duration: 0.2, ease: 'easeOut' }}
+            className="absolute right-0 mt-2 w-80 sm:w-96 bg-brand-card/95 backdrop-blur-xl border border-brand-border/90 rounded-2xl shadow-2xl z-50 overflow-hidden flex flex-col max-h-[520px]"
+          >
           {/* Header */}
           <div className="p-3.5 border-b border-brand-border/60 flex items-center justify-between bg-brand-surface/50">
             <div className="flex items-center gap-2">
@@ -365,8 +376,9 @@ export const NotificationDropdown: React.FC = () => {
               <ExternalLink className="w-3 h-3" />
             </Link>
           </div>
-        </div>
+        </motion.div>
       )}
-    </div>
+    </AnimatePresence>
+  </div>
   );
 };

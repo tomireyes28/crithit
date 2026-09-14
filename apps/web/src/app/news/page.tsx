@@ -17,6 +17,7 @@ import {
   Bookmark,
 } from 'lucide-react';
 import { apiClient } from '@/lib/api';
+import { NewsCardSkeleton } from '@/components/news/NewsCardSkeleton';
 
 interface RelatedGame {
   id: string;
@@ -262,9 +263,10 @@ export default function NewsPage() {
         {/* Grilla de Noticias */}
         <div className="space-y-6">
           {isLoading ? (
-            <div className="py-24 flex flex-col items-center justify-center gap-3">
-              <div className="w-8 h-8 border-2 border-brand-primary border-t-transparent rounded-full animate-spin" />
-              <span className="text-xs font-medium text-brand-muted">Cargando noticias...</span>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[...Array(6)].map((_, i) => (
+                <NewsCardSkeleton key={i} />
+              ))}
             </div>
           ) : articles.length === 0 ? (
             <div className="p-12 rounded-3xl bg-brand-surface/40 border border-brand-border/60 text-center flex flex-col items-center justify-center">

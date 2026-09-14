@@ -192,7 +192,7 @@ export const Navbar = () => {
                     </Link>
 
                     <Link
-                      href={`/profile/${user.username}/reviews`}
+                      href={`/profile/${user.username}?tab=reviews`}
                       onClick={() => setUserDropdownOpen(false)}
                       className="flex items-center gap-2.5 px-4 py-2 text-sm text-brand-muted hover:text-white hover:bg-brand-surface transition-colors"
                     >
@@ -201,7 +201,7 @@ export const Navbar = () => {
                     </Link>
 
                     <Link
-                      href={`/profile/${user.username}/backlog`}
+                      href="/diary?status=BACKLOG"
                       onClick={() => setUserDropdownOpen(false)}
                       className="flex items-center gap-2.5 px-4 py-2 text-sm text-brand-muted hover:text-white hover:bg-brand-surface transition-colors"
                     >

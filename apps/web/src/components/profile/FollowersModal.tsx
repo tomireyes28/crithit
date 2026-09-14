@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { X, Users, Award, Loader2, UserCheck, UserPlus } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { apiClient } from '@/lib/api';
 import { useAuth } from '@/lib/auth-context';
 
@@ -46,6 +47,16 @@ export const FollowersModal: React.FC<FollowersModalProps> = ({
     }
   }, [isOpen, username, type]);
 
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isOpen) {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
+
   if (!isOpen) return null;
 
   const handleToggleFollow = async (item: FollowUserItem) => {
@@ -69,8 +80,18 @@ export const FollowersModal: React.FC<FollowersModalProps> = ({
   const title = type === 'followers' ? 'Seguidores' : 'Siguiendo';
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in">
-      <div className="relative w-full max-w-md bg-brand-surface border border-brand-border rounded-2xl shadow-2xl p-6 text-brand-text flex flex-col max-h-[85vh]">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md"
+      onClick={onClose}
+    >
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95, y: 16 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.95, y: 16 }}
+        transition={{ type: 'spring', damping: 25, stiffness: 350 }}
+        className="relative w-full max-w-md bg-brand-surface border border-brand-border rounded-2xl shadow-2xl p-6 text-brand-text flex flex-col max-h-[85vh]"
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Header */}
         <div className="flex items-center justify-between pb-4 border-b border-brand-border/60">
           <div className="flex items-center gap-2.5">
@@ -177,7 +198,7 @@ export const FollowersModal: React.FC<FollowersModalProps> = ({
             </div>
           )}
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 };

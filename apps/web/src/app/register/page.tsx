@@ -13,7 +13,10 @@ import {
   AlertCircle,
   Loader2,
   CheckCircle2,
+  Eye,
+  EyeOff,
 } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { useAuth } from '@/lib/auth-context';
 
 function RegisterForm() {
@@ -24,12 +27,28 @@ function RegisterForm() {
   const [displayName, setDisplayName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Requirements checks
   const isUsernameValid = /^[a-zA-Z0-9_]{3,24}$/.test(username);
   const isPasswordValid = password.length >= 8;
+
+  const getPasswordStrength = (pass: string) => {
+    if (!pass) return { score: 0, label: '', color: '' };
+    let score = 0;
+    if (pass.length >= 8) score += 1;
+    if (/[0-9]/.test(pass)) score += 1;
+    if (/[a-z]/.test(pass) && /[A-Z]/.test(pass)) score += 1;
+    if (/[^A-Za-z0-9]/.test(pass)) score += 1;
+
+    if (score <= 1) return { score: 1, label: 'Débil', color: 'bg-rose-500' };
+    if (score <= 3) return { score: 2, label: 'Media', color: 'bg-amber-500' };
+    return { score: 3, label: 'Fuerte', color: 'bg-emerald-500' };
+  };
+
+  const passStrength = getPasswordStrength(password);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -68,7 +87,12 @@ function RegisterForm() {
   };
 
   return (
-    <div className="max-w-md w-full space-y-8 bg-brand-card border border-brand-border/80 p-8 sm:p-10 rounded-3xl shadow-2xl relative overflow-hidden">
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.35, ease: 'easeOut' }}
+      className="max-w-md w-full space-y-8 bg-brand-card/90 backdrop-blur-xl border border-brand-border/80 p-8 sm:p-10 rounded-3xl shadow-2xl relative overflow-hidden"
+    >
       {/* Decorative Glow */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-48 h-1 bg-gradient-to-r from-transparent via-brand-secondary to-transparent" />
 
@@ -199,32 +223,81 @@ function RegisterForm() {
             </label>
             <div className="relative">
               <input
-                type="password"
+                type={showPassword ? 'text' : 'password'}
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Mínimo 8 caracteres"
-                className="w-full bg-brand-surface border border-brand-border rounded-xl pl-10 pr-4 py-2.5 text-sm text-white placeholder-brand-muted focus:outline-none focus:border-brand-primary focus:ring-1 focus:ring-brand-primary transition-all"
+                className="w-full bg-brand-surface border border-brand-border rounded-xl pl-10 pr-11 py-2.5 text-sm text-white placeholder-brand-muted focus:outline-none focus:border-brand-primary focus:ring-1 focus:ring-brand-primary transition-all"
               />
               <Lock className="w-4 h-4 text-brand-muted absolute left-3.5 top-3.5" />
-            </div>
-            {password && (
-              <p className={`text-[11px] mt-1 flex items-center gap-1 ${isPasswordValid ? 'text-emerald-400' : 'text-amber-400'}`}>
-                {isPasswordValid ? (
-                  <>
-                    <CheckCircle2 className="w-3 h-3" /> Longitud segura
-                  </>
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3.5 top-3 text-brand-muted hover:text-white transition-colors p-0.5 rounded-lg focus:outline-none"
+                aria-label={showPassword ? 'Ocultar contraseña' : 'Ver contraseña'}
+              >
+                {showPassword ? (
+                  <EyeOff className="w-4 h-4" />
                 ) : (
-                  'Mínimo 8 caracteres requeridos'
+                  <Eye className="w-4 h-4" />
                 )}
-              </p>
+              </button>
+            </div>
+
+            {/* Password Strength Meter */}
+            {password && (
+              <div className="mt-2 space-y-1.5">
+                <div className="flex items-center gap-1.5">
+                  <div
+                    className={`h-1 flex-1 rounded-full transition-all ${
+                      passStrength.score >= 1 ? passStrength.color : 'bg-brand-surface'
+                    }`}
+                  />
+                  <div
+                    className={`h-1 flex-1 rounded-full transition-all ${
+                      passStrength.score >= 2 ? passStrength.color : 'bg-brand-surface'
+                    }`}
+                  />
+                  <div
+                    className={`h-1 flex-1 rounded-full transition-all ${
+                      passStrength.score >= 3 ? passStrength.color : 'bg-brand-surface'
+                    }`}
+                  />
+                </div>
+                <div className="flex items-center justify-between text-[11px]">
+                  <span className={`flex items-center gap-1 ${isPasswordValid ? 'text-emerald-400' : 'text-amber-400'}`}>
+                    {isPasswordValid ? (
+                      <>
+                        <CheckCircle2 className="w-3 h-3" /> Mínimo 8 caracteres cumplido
+                      </>
+                    ) : (
+                      'Mínimo 8 caracteres requeridos'
+                    )}
+                  </span>
+                  <span className="font-mono text-brand-muted">
+                    Seguridad:{' '}
+                    <strong
+                      className={
+                        passStrength.score === 1
+                          ? 'text-rose-400'
+                          : passStrength.score === 2
+                          ? 'text-amber-400'
+                          : 'text-emerald-400'
+                      }
+                    >
+                      {passStrength.label}
+                    </strong>
+                  </span>
+                </div>
+              </div>
             )}
           </div>
 
           <button
             type="submit"
             disabled={isSubmitting || !isUsernameValid || !isPasswordValid}
-            className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-bold text-white bg-brand-primary hover:bg-brand-primary-hover shadow-glow-primary disabled:opacity-50 disabled:cursor-not-allowed transition-all text-sm mt-6"
+            className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl font-bold text-white bg-brand-primary hover:bg-brand-primary-hover shadow-glow-primary disabled:opacity-50 disabled:cursor-not-allowed transition-all text-sm mt-6 active:scale-[0.99]"
           >
             {isSubmitting ? (
               <>
@@ -248,7 +321,7 @@ function RegisterForm() {
             Inicia sesión aquí
           </Link>
         </p>
-      </div>
+      </motion.div>
   );
 }
 

@@ -6,6 +6,7 @@ import { Users, Globe, Flame, Filter, Loader2, Sparkles, UserPlus } from 'lucide
 import { useAuth } from '@/lib/auth-context';
 import { apiClient } from '@/lib/api';
 import { ActivityFeedItem } from '@/components/activity/ActivityFeedItem';
+import { ActivityItemSkeleton } from '@/components/activity/ActivityItemSkeleton';
 
 export default function ActivityPage() {
   const { user } = useAuth();
@@ -123,9 +124,10 @@ export default function ActivityPage() {
         {/* Feed de Actividad */}
         <div className="pt-6">
           {isLoading ? (
-            <div className="flex flex-col items-center justify-center py-20 text-brand-muted gap-3">
-              <Loader2 className="w-8 h-8 animate-spin text-brand-secondary" />
-              <p className="text-xs font-medium">Cargando actividades recientes...</p>
+            <div className="space-y-4">
+              {[...Array(5)].map((_, i) => (
+                <ActivityItemSkeleton key={i} />
+              ))}
             </div>
           ) : activities.length > 0 ? (
             <div className="space-y-4">

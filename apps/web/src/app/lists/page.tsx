@@ -6,6 +6,7 @@ import { Plus, Search, Flame, Sparkles, Layers, User, Loader2 } from 'lucide-rea
 import { useAuth } from '@/lib/auth-context';
 import { apiClient } from '@/lib/api';
 import { ListCard, ListCardData } from '@/components/lists/ListCard';
+import { ListCardSkeleton } from '@/components/lists/ListCardSkeleton';
 import { CreateListModal } from '@/components/lists/CreateListModal';
 
 export default function ListsPage() {
@@ -209,9 +210,10 @@ export default function ListsPage() {
         {/* Lists Grid */}
         <div className="pt-8">
           {isLoading ? (
-            <div className="flex flex-col items-center justify-center py-20 text-brand-muted gap-3">
-              <Loader2 className="w-8 h-8 animate-spin text-brand-accent" />
-              <p className="text-sm font-medium">Cargando colecciones de la comunidad...</p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[...Array(6)].map((_, i) => (
+                <ListCardSkeleton key={i} />
+              ))}
             </div>
           ) : lists.length > 0 ? (
             <>

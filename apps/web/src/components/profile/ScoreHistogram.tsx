@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { ScoreBadge } from '@/components/ui/ScoreBadge';
+import { motion } from 'framer-motion';
 
 export interface ScoreHistogramBucket {
   range: string;
@@ -89,12 +90,15 @@ export const ScoreHistogram: React.FC<ScoreHistogramProps> = ({
                   )}
 
                   {/* Barra */}
-                  <div
-                    className="w-full rounded-t-md transition-all duration-300"
+                  <motion.div
+                    initial={{ scaleY: 0 }}
+                    animate={{ scaleY: 1 }}
+                    transition={{ duration: 0.45, delay: idx * 0.03, ease: 'easeOut' }}
+                    className="w-full rounded-t-md origin-bottom transition-all duration-300"
                     style={{
                       height: `${heightPercent}%`,
                       backgroundColor: isHovered ? color : `${color}cc`,
-                      boxShadow: isHovered ? `0 0 12px ${color}80` : undefined,
+                      boxShadow: isHovered ? `0 0 14px ${color}90` : undefined,
                     }}
                   />
                 </div>

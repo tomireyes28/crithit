@@ -125,4 +125,9 @@ export class ReviewQueryDto {
   @IsBoolean()
   @Type(() => Boolean)
   criticOnly?: boolean = false;
+
+  @ApiPropertyOptional({ description: 'Búsqueda por texto en título, contenido o nombre de juego' })
+  @IsOptional()
+  @IsString()
+  search?: string;
 }

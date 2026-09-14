@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { X, Check, Plus, Loader2, Bookmark, Layers, Lock, Hash } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { apiClient } from '@/lib/api';
 import { CreateListModal } from './CreateListModal';
 
@@ -55,6 +56,16 @@ export const AddToListModal: React.FC<AddToListModalProps> = ({
       setToastMessage(null);
     }
   }, [isOpen, game.id]);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isOpen) {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
 
   if (!isOpen) return null;
 
@@ -122,8 +133,18 @@ export const AddToListModal: React.FC<AddToListModalProps> = ({
 
   return (
     <>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in">
-        <div className="relative w-full max-w-md bg-brand-surface border border-brand-border rounded-2xl shadow-2xl p-6 text-brand-text flex flex-col">
+      <div
+        className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md"
+        onClick={onClose}
+      >
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95, y: 16 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={{ opacity: 0, scale: 0.95, y: 16 }}
+          transition={{ type: 'spring', damping: 25, stiffness: 350 }}
+          className="relative w-full max-w-md bg-brand-surface border border-brand-border rounded-2xl shadow-2xl p-6 text-brand-text flex flex-col"
+          onClick={(e) => e.stopPropagation()}
+        >
           {/* Header con Miniatura del Juego */}
           <div className="flex items-center justify-between pb-4 border-b border-brand-border/60">
             <div className="flex items-center gap-3">
@@ -240,7 +261,7 @@ export const AddToListModal: React.FC<AddToListModalProps> = ({
               <span>Crear nueva lista para este juego</span>
             </button>
           </div>
-        </div>
+        </motion.div>
       </div>
 
       {/* Modal secundario para crear lista */}

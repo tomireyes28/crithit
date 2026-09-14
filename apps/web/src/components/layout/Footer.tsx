@@ -78,12 +78,12 @@ export const Footer = () => {
             <p className="text-xs text-brand-muted leading-relaxed">
               Metadatos e imágenes proporcionados por{' '}
               <a
-                href="https://www.igdb.com"
+                href="https://rawg.io"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-brand-secondary hover:underline font-medium"
               >
-                IGDB (Twitch/Amazon)
+                RAWG Video Games Database
               </a>
               .
             </p>

@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { X, Plus, Search, Trash2, ArrowUp, ArrowDown, Sparkles, Hash, Globe, Lock } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { apiClient } from '@/lib/api';
 
 interface SelectedGameItem {
@@ -74,6 +75,16 @@ export const CreateListModal: React.FC<CreateListModalProps> = ({
       }
     }
   }, [isOpen, initialGame]);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && isOpen) {
+        onClose();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
 
   // Debounced search
   useEffect(() => {
@@ -197,8 +208,18 @@ export const CreateListModal: React.FC<CreateListModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in overflow-y-auto">
-      <div className="relative w-full max-w-2xl bg-brand-surface border border-brand-border rounded-2xl shadow-2xl p-6 sm:p-8 my-8 text-brand-text max-h-[90vh] flex flex-col">
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md overflow-y-auto"
+      onClick={onClose}
+    >
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95, y: 16 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.95, y: 16 }}
+        transition={{ type: 'spring', damping: 25, stiffness: 350 }}
+        className="relative w-full max-w-2xl bg-brand-surface border border-brand-border rounded-2xl shadow-2xl p-6 sm:p-8 my-8 text-brand-text max-h-[90vh] flex flex-col"
+        onClick={(e) => e.stopPropagation()}
+      >
         {/* Header */}
         <div className="flex items-center justify-between pb-4 border-b border-brand-border/60">
           <div className="flex items-center gap-2.5">
@@ -527,7 +548,7 @@ export const CreateListModal: React.FC<CreateListModalProps> = ({
             </button>
           </div>
         </form>
-      </div>
+      </motion.div>
     </div>
   );
 };

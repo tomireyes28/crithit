@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState, useCallback } from 'react';
-import { useParams } from 'next/navigation';
+import { useParams, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { apiClient } from '@/lib/api';
 import { useAuth } from '@/lib/auth-context';
@@ -12,7 +12,19 @@ import { FavoriteSelectorModal } from '@/components/profile/FavoriteSelectorModa
 import { EditProfileModal } from '@/components/profile/EditProfileModal';
 import { FollowersModal } from '@/components/profile/FollowersModal';
 import { ListCard } from '@/components/lists/ListCard';
-import { UserPlus, UserCheck } from 'lucide-react';
+import {
+  UserPlus,
+  UserCheck,
+  MapPin,
+  Link2,
+  Calendar,
+  Settings,
+  Clock,
+  User,
+  MessageSquare,
+  BookOpen,
+  Layers,
+} from 'lucide-react';
 import { PLAY_STATUS_MAP, PlayStatus } from '@crithit/shared';
 
 interface ProfileData {
@@ -94,6 +106,7 @@ interface ProfileData {
 
 export default function UserProfilePage() {
   const params = useParams();
+  const searchParams = useSearchParams();
   const username = params?.username as string;
   const { user: currentUser } = useAuth();
 
@@ -101,6 +114,13 @@ export default function UserProfilePage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'reviews' | 'diary' | 'lists'>('reviews');
+
+  useEffect(() => {
+    const tab = searchParams.get('tab');
+    if (tab === 'reviews' || tab === 'diary' || tab === 'lists') {
+      setActiveTab(tab);
+    }
+  }, [searchParams]);
   const [userLists, setUserLists] = useState<any[]>([]);
   const [isLoadingLists, setIsLoadingLists] = useState(false);
   const [isFollowing, setIsFollowing] = useState(false);
@@ -255,8 +275,8 @@ export default function UserProfilePage() {
   if (error || !profile) {
     return (
       <div className="min-h-[70vh] flex flex-col items-center justify-center text-center px-4 bg-brand-bg">
-        <div className="w-20 h-20 rounded-3xl bg-rose-500/10 border border-rose-500/30 flex items-center justify-center text-4xl mb-4">
-          👤
+        <div className="w-20 h-20 rounded-3xl bg-rose-500/10 border border-rose-500/30 flex items-center justify-center mb-4">
+          <User className="w-10 h-10 text-rose-400" />
         </div>
         <h1 className="text-2xl font-bold text-brand-text mb-2">
           {error || 'Perfil no encontrado'}
@@ -333,8 +353,9 @@ export default function UserProfilePage() {
               {/* Metadatos (Ubicación, Web, Miembro desde) */}
               <div className="flex flex-wrap items-center gap-3 text-xs text-brand-muted">
                 {profile.user.location && (
-                  <span className="flex items-center gap-1">
-                    <span>📍</span> {profile.user.location}
+                  <span className="flex items-center gap-1.5">
+                    <MapPin className="w-3.5 h-3.5 text-brand-muted" />
+                    <span>{profile.user.location}</span>
                   </span>
                 )}
                 {profile.user.website && (
@@ -342,13 +363,15 @@ export default function UserProfilePage() {
                     href={profile.user.website.startsWith('http') ? profile.user.website : `https://${profile.user.website}`}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-1 text-brand-accent hover:underline"
+                    className="flex items-center gap-1.5 text-brand-accent hover:underline"
                   >
-                    <span>🔗</span> Enlace personal
+                    <Link2 className="w-3.5 h-3.5" />
+                    <span>Enlace personal</span>
                   </a>
                 )}
-                <span className="flex items-center gap-1">
-                  <span>📅</span> Miembro desde {formatJoinDate(profile.user.createdAt)}
+                <span className="flex items-center gap-1.5">
+                  <Calendar className="w-3.5 h-3.5 text-brand-muted" />
+                  <span>Miembro desde {formatJoinDate(profile.user.createdAt)}</span>
                 </span>
               </div>
 
@@ -379,9 +402,9 @@ export default function UserProfilePage() {
           {isOwner ? (
             <button
               onClick={() => setIsEditProfileModalOpen(true)}
-              className="px-4 py-2 rounded-xl text-xs font-bold bg-brand-surface hover:bg-brand-border/60 border border-brand-border text-brand-text transition-colors flex items-center gap-1.5"
+              className="px-4 py-2 rounded-xl text-xs font-bold bg-brand-surface hover:bg-brand-border/60 border border-brand-border text-brand-text transition-colors flex items-center gap-1.5 shadow-sm"
             >
-              <span>⚙️</span>
+              <Settings className="w-3.5 h-3.5" />
               <span>Editar Perfil</span>
             </button>
           ) : (
@@ -523,15 +546,31 @@ export default function UserProfilePage() {
 
           {activeTab === 'reviews' ? (
             profile.recentReviews.length === 0 ? (
-              <p className="text-xs text-brand-muted py-6 text-center">
-                Este usuario aún no ha publicado reseñas.
-              </p>
+              <div className="py-12 px-4 rounded-2xl bg-brand-surface/20 border border-brand-border/40 text-center flex flex-col items-center justify-center">
+                <div className="w-12 h-12 rounded-2xl bg-brand-surface border border-brand-border flex items-center justify-center mb-3 text-brand-muted">
+                  <MessageSquare className="w-6 h-6" />
+                </div>
+                <h4 className="text-sm font-bold text-brand-text mb-1">Sin reseñas todavía</h4>
+                <p className="text-xs text-brand-muted max-w-sm mb-4">
+                  {isOwner
+                    ? 'Aún no has escrito ninguna reseña. Comparte tu opinión y calificación sobre tus juegos favoritos.'
+                    : 'Este usuario aún no ha publicado reseñas en la comunidad.'}
+                </p>
+                {isOwner && (
+                  <Link
+                    href="/games"
+                    className="px-4 py-2 rounded-xl text-xs font-bold bg-brand-accent text-brand-bg hover:brightness-110 transition-all shadow"
+                  >
+                    Explorar y Reseñar Juegos
+                  </Link>
+                )}
+              </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {profile.recentReviews.map((rev) => (
                   <div
                     key={rev.id}
-                    className="p-4 rounded-2xl bg-brand-surface/40 border border-brand-border/60 flex items-start gap-4"
+                    className="p-4 rounded-2xl bg-brand-surface/40 border border-brand-border/60 flex items-start gap-4 hover:border-brand-border transition-all"
                   >
                     <Link
                       href={`/games/${rev.game.slug}`}
@@ -580,9 +619,25 @@ export default function UserProfilePage() {
             )
           ) : activeTab === 'diary' ? (
             profile.recentPlays.length === 0 ? (
-              <p className="text-xs text-brand-muted py-6 text-center">
-                No hay partidas registradas recientemente en el diario.
-              </p>
+              <div className="py-12 px-4 rounded-2xl bg-brand-surface/20 border border-brand-border/40 text-center flex flex-col items-center justify-center">
+                <div className="w-12 h-12 rounded-2xl bg-brand-surface border border-brand-border flex items-center justify-center mb-3 text-brand-muted">
+                  <BookOpen className="w-6 h-6" />
+                </div>
+                <h4 className="text-sm font-bold text-brand-text mb-1">Diario de partidas vacío</h4>
+                <p className="text-xs text-brand-muted max-w-sm mb-4">
+                  {isOwner
+                    ? 'Lleva un registro de tus sesiones, horas y estado de juego en tu diario personal.'
+                    : 'No hay partidas registradas recientemente en este diario.'}
+                </p>
+                {isOwner && (
+                  <Link
+                    href="/diary"
+                    className="px-4 py-2 rounded-xl text-xs font-bold bg-brand-accent text-brand-bg hover:brightness-110 transition-all shadow"
+                  >
+                    Ir a Mi Diario
+                  </Link>
+                )}
+              </div>
             ) : (
               <div className="space-y-3">
                 {profile.recentPlays.map((p) => {
@@ -590,7 +645,7 @@ export default function UserProfilePage() {
                   return (
                     <div
                       key={p.id}
-                      className="p-3.5 rounded-2xl bg-brand-surface/40 border border-brand-border/60 flex items-center justify-between gap-4"
+                      className="p-3.5 rounded-2xl bg-brand-surface/40 border border-brand-border/60 flex items-center justify-between gap-4 hover:border-brand-border transition-all"
                     >
                       <div className="flex items-center gap-3 min-w-0">
                         <Link
@@ -613,11 +668,15 @@ export default function UserProfilePage() {
                           >
                             {p.game.name}
                           </Link>
-                          <span className="text-[11px] text-brand-muted">
-                            {formatDate(p.logDate)}
-                            {p.platform ? ` · ${p.platform}` : ''}
-                            {p.hoursPlayed ? ` · ⏱️ ${p.hoursPlayed}h` : ''}
-                          </span>
+                          <div className="flex items-center gap-2 text-[11px] text-brand-muted mt-0.5">
+                            <span>{formatDate(p.logDate)}</span>
+                            {p.platform && <span>· {p.platform}</span>}
+                            {p.hoursPlayed ? (
+                              <span className="flex items-center gap-1">
+                                · <Clock className="w-3 h-3 text-brand-muted" /> {p.hoursPlayed}h
+                              </span>
+                            ) : null}
+                          </div>
                         </div>
                       </div>
 
@@ -634,12 +693,29 @@ export default function UserProfilePage() {
               </div>
             )
           ) : isLoadingLists ? (
-            <div className="py-12 text-center text-xs text-brand-muted">Cargando listas...</div>
+            <div className="py-12 text-center text-xs text-brand-muted flex flex-col items-center justify-center gap-3">
+              <div className="w-8 h-8 rounded-full border-2 border-brand-accent border-t-transparent animate-spin" />
+              <span>Cargando listas y colecciones...</span>
+            </div>
           ) : userLists.length === 0 ? (
-            <div className="py-12 text-center text-xs text-brand-muted">
-              {isOwner
-                ? 'Aún no has creado ninguna lista. ¡Crea tu primera lista desde la sección Listas!'
-                : 'Este usuario aún no tiene listas públicas.'}
+            <div className="py-12 px-4 rounded-2xl bg-brand-surface/20 border border-brand-border/40 text-center flex flex-col items-center justify-center">
+              <div className="w-12 h-12 rounded-2xl bg-brand-surface border border-brand-border flex items-center justify-center mb-3 text-brand-muted">
+                <Layers className="w-6 h-6" />
+              </div>
+              <h4 className="text-sm font-bold text-brand-text mb-1">Sin listas creadas</h4>
+              <p className="text-xs text-brand-muted max-w-sm mb-4">
+                {isOwner
+                  ? 'Organiza tus juegos por sagas, favoritos anuales o recomendaciones temáticas.'
+                  : 'Este usuario aún no tiene listas públicas compartidas.'}
+              </p>
+              {isOwner && (
+                <Link
+                  href="/lists"
+                  className="px-4 py-2 rounded-xl text-xs font-bold bg-brand-accent text-brand-bg hover:brightness-110 transition-all shadow"
+                >
+                  Crear mi Primera Lista
+                </Link>
+              )}
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">

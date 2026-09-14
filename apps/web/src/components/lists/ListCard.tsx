@@ -4,6 +4,7 @@ import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Heart, Layers, Award } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 export interface ListCardData {
   id: string;
@@ -36,7 +37,13 @@ export const ListCard: React.FC<ListCardProps> = ({ list }) => {
   const covers = list.previewCovers || [];
 
   return (
-    <div className="group bg-brand-surface/70 hover:bg-brand-surface rounded-2xl border border-brand-border/60 hover:border-brand-accent/40 transition-all duration-300 flex flex-col overflow-hidden shadow-lg hover:shadow-brand-accent/5 hover:-translate-y-1">
+    <motion.div
+      whileHover={{ y: -5, scale: 1.015 }}
+      whileTap={{ scale: 0.985 }}
+      transition={{ type: 'spring', stiffness: 350, damping: 22 }}
+      className="h-full"
+    >
+      <div className="group bg-brand-surface/75 hover:bg-brand-surface rounded-2xl border border-brand-border/60 hover:border-brand-secondary/50 transition-all duration-300 flex flex-col overflow-hidden shadow-lg hover:shadow-card-hover h-full justify-between">
       {/* Portada en Mosaico 2x2 / Collage */}
       <Link href={`/lists/${list.id}`} className="block relative aspect-[16/10] bg-brand-bg/80 overflow-hidden">
         {list.coverImageUrl ? (
@@ -175,6 +182,7 @@ export const ListCard: React.FC<ListCardProps> = ({ list }) => {
           </div>
         </div>
       </div>
-    </div>
+      </div>
+    </motion.div>
   );
 };
