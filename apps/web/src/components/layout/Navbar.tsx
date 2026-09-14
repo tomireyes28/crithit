@@ -95,11 +95,17 @@ export const Navbar = () => {
                 Noticias
               </Link>
               <Link
-                href="/critics/exam"
+                href="/calendar"
+                className="px-3.5 py-2 rounded-lg text-sm font-medium text-brand-muted hover:text-white hover:bg-brand-surface/60 transition-colors"
+              >
+                Calendario
+              </Link>
+              <Link
+                href="/critics"
                 className="px-3.5 py-2 rounded-lg text-sm font-medium text-brand-secondary hover:text-white hover:bg-brand-secondary/10 transition-colors flex items-center gap-1.5"
               >
                 <Award className="w-4 h-4 text-brand-secondary" />
-                Examen Crítico
+                Críticos
               </Link>
             </div>
           </div>
@@ -305,11 +311,18 @@ export const Navbar = () => {
             Noticias
           </Link>
           <Link
-            href="/critics/exam"
+            href="/calendar"
+            onClick={() => setMobileMenuOpen(false)}
+            className="block px-3 py-2 rounded-md text-base font-medium text-brand-muted hover:text-white hover:bg-brand-surface"
+          >
+            Calendario
+          </Link>
+          <Link
+            href="/critics"
             onClick={() => setMobileMenuOpen(false)}
             className="block px-3 py-2 rounded-md text-base font-medium text-brand-secondary hover:bg-brand-surface"
           >
-            Examen Crítico
+            Críticos Acreditados
           </Link>
 
           <div className="pt-3 border-t border-brand-border">

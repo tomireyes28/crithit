@@ -36,6 +36,19 @@ export class GamesController {
     return this.gamesService.getUpcoming(limit ? Number(limit) : 8);
   }
 
+  @Get('calendar')
+  @ApiOperation({ summary: 'Obtener videojuegos de un mes y año para el calendario' })
+  @ApiResponse({ status: 200, description: 'Lanzamientos del mes' })
+  async getCalendar(
+    @Query('year') year?: number,
+    @Query('month') month?: number,
+    @Query('platform') platform?: string,
+  ) {
+    const currentYear = year ? Number(year) : new Date().getFullYear();
+    const currentMonth = month ? Number(month) : new Date().getMonth() + 1;
+    return this.gamesService.getCalendar(currentYear, currentMonth, platform);
+  }
+
   @Get('genres')
   @ApiOperation({ summary: 'Obtener lista de géneros disponibles' })
   @ApiResponse({ status: 200, description: 'Lista de géneros' })

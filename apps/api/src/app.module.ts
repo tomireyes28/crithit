@@ -10,6 +10,7 @@ import { ListsModule } from './modules/lists/lists.module';
 import { ActivityModule } from './modules/activity/activity.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { CriticsModule } from './modules/critics/critics.module';
+import { NewsModule } from './modules/news/news.module';
 import { AppController } from './app.controller';
 
 @Module({
@@ -28,6 +29,7 @@ import { AppController } from './app.controller';
     ActivityModule,
     NotificationsModule,
     CriticsModule,
+    NewsModule,
   ],
   controllers: [AppController],
   providers: [],

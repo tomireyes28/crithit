@@ -288,5 +288,59 @@ export class GamesService {
       select: { id: true, name: true, slug: true, abbreviation: true },
     });
   }
+
+  /**
+   * Obtiene los lanzamientos de un mes y año específico para el calendario interactivo.
+   */
+  async getCalendar(year: number, month: number, platformSlug?: string) {
+    const startOfMonth = new Date(Date.UTC(year, month - 1, 1, 0, 0, 0));
+    const endOfMonth = new Date(Date.UTC(year, month, 0, 23, 59, 59, 999));
+
+    const where: Prisma.GameWhereInput = {
+      firstReleaseDate: {
+        gte: startOfMonth,
+        lte: endOfMonth,
+      },
+    };
+
+    if (platformSlug && platformSlug !== 'all') {
+      where.platforms = {
+        some: {
+          platform: {
+            slug: platformSlug,
+          },
+        },
+      };
+    }
+
+    const games = await this.prisma.game.findMany({
+      where,
+      orderBy: { firstReleaseDate: 'asc' },
+      include: {
+        genres: { include: { genre: true } },
+        platforms: { include: { platform: true } },
+      },
+    });
+
+    return games.map((game) => ({
+      id: game.id,
+      slug: game.slug,
+      name: game.name,
+      summary: game.summary,
+      coverUrl: this.getCoverUrl(game.coverUrl, game.coverImageId),
+      backdropUrl: this.getBackdropUrl(game.backdropUrl, game.backdropImageId),
+      firstReleaseDate: game.firstReleaseDate?.toISOString() || null,
+      communityScore: game.communityScore,
+      criticScore: game.criticScore,
+      metacriticScore: game.metacriticScore,
+      genres: game.genres.map((g) => g.genre.name),
+      platforms: game.platforms.map((p) => ({
+        id: p.platform.id,
+        name: p.platform.name,
+        slug: p.platform.slug,
+        abbreviation: p.platform.abbreviation,
+      })),
+    }));
+  }
 }
 
