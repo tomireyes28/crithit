@@ -2,7 +2,9 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { Scale } from 'lucide-react';
 import { ScoreBadge } from '@/components/ui/ScoreBadge';
+import { AnimatedScore } from '@/components/ui/AnimatedScore';
 
 export interface GameHeroProps {
   game: {
@@ -169,7 +171,7 @@ export const GameHero: React.FC<GameHeroProps> = ({ game }) => {
                 ) : (
                   <div className="flex flex-col">
                     <span className="text-xs font-bold text-brand-text tracking-wide uppercase flex items-center gap-1.5">
-                      <span>⚖️</span> Crítica
+                      <Scale className="w-3.5 h-3.5 text-brand-muted" /> Crítica
                     </span>
                     <span className="text-[11px] text-brand-muted mt-0.5">
                       En evaluación
@@ -191,7 +193,7 @@ export const GameHero: React.FC<GameHeroProps> = ({ game }) => {
                           : 'bg-rose-500/20 text-rose-400 border border-rose-500/50'
                       }`}
                     >
-                      {game.metacriticScore}
+                      <AnimatedScore value={game.metacriticScore} />
                     </div>
                     <div className="flex flex-col">
                       <span className="text-xs font-bold text-brand-text tracking-wide uppercase">

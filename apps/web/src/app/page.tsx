@@ -5,7 +5,14 @@ import Link from 'next/link';
 import { ScoreSlider } from '@/components/ui/ScoreSlider';
 import { ScoreBadge } from '@/components/ui/ScoreBadge';
 import { GameCard } from '@/components/games/GameCard';
-import { FadeIn, StaggerContainer, StaggerItem, HoverLift } from '@/components/ui/MotionWrapper';
+import {
+  FadeIn,
+  StaggerContainer,
+  StaggerItem,
+  HoverLift,
+  ScrollReveal,
+  ScrollStaggerContainer,
+} from '@/components/ui/MotionWrapper';
 import {
   Sparkles,
   Award,
@@ -161,7 +168,7 @@ export default function HomePage() {
       </FadeIn>
 
       {/* Featured Games Section */}
-      <section className="space-y-6">
+      <ScrollReveal className="space-y-6">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <TrendingUp className="w-5 h-5 text-brand-secondary" />
@@ -178,18 +185,18 @@ export default function HomePage() {
           </Link>
         </div>
 
-        <StaggerContainer className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6">
+        <ScrollStaggerContainer className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6">
           {trendingGames.map((game) => (
             <StaggerItem key={game.id}>
               <GameCard game={game} />
             </StaggerItem>
           ))}
-        </StaggerContainer>
-      </section>
+        </ScrollStaggerContainer>
+      </ScrollReveal>
 
       {/* Live Community Reviews Section */}
       {recentReviews.length > 0 && (
-        <section className="space-y-6">
+        <ScrollReveal className="space-y-6">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <MessageSquare className="w-5 h-5 text-brand-tertiary" />
@@ -279,11 +286,11 @@ export default function HomePage() {
               </HoverLift>
             ))}
           </div>
-        </section>
+        </ScrollReveal>
       )}
 
       {/* Feature Pillars Grid */}
-      <section className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4">
+      <ScrollReveal className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4">
         <HoverLift>
           <div className="glass-panel p-6 rounded-2xl border border-brand-border/60 space-y-3 h-full">
             <div className="w-10 h-10 rounded-xl bg-brand-primary/20 border border-brand-primary/40 flex items-center justify-center text-brand-primary">
@@ -319,10 +326,10 @@ export default function HomePage() {
             </p>
           </div>
         </HoverLift>
-      </section>
+      </ScrollReveal>
 
       {/* Final Call to Action */}
-      <FadeIn className="relative overflow-hidden bg-gradient-to-r from-brand-surface via-brand-card to-brand-surface border border-brand-primary/40 rounded-3xl p-8 sm:p-14 text-center space-y-6 shadow-glow-primary">
+      <ScrollReveal className="relative overflow-hidden bg-gradient-to-r from-brand-surface via-brand-card to-brand-surface border border-brand-primary/40 rounded-3xl p-8 sm:p-14 text-center space-y-6 shadow-glow-primary">
         <div className="absolute -top-24 -left-24 w-60 h-60 bg-brand-primary/20 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute -bottom-24 -right-24 w-60 h-60 bg-brand-secondary/20 rounded-full blur-3xl pointer-events-none" />
 
@@ -343,7 +350,7 @@ export default function HomePage() {
             </Link>
           </HoverLift>
         </div>
-      </FadeIn>
+      </ScrollReveal>
     </div>
   );
 }

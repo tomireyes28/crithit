@@ -1,12 +1,15 @@
 'use client';
 
 import React from 'react';
+import { motion } from 'framer-motion';
 import { getScoreColorInfo } from '@crithit/shared';
+import { AnimatedScore } from '@/components/ui/AnimatedScore';
 
 interface ScoreBadgeProps {
   score: number | null | undefined;
   size?: 'sm' | 'md' | 'lg' | 'xl';
   showLabel?: boolean;
+  animate?: boolean;
   className?: string;
 }
 
@@ -14,6 +17,7 @@ export const ScoreBadge: React.FC<ScoreBadgeProps> = ({
   score,
   size = 'md',
   showLabel = false,
+  animate = true,
   className = '',
 }) => {
   if (score === null || score === undefined || isNaN(score)) {
@@ -37,18 +41,21 @@ export const ScoreBadge: React.FC<ScoreBadgeProps> = ({
 
   return (
     <div className={`inline-flex items-center gap-2 ${className}`}>
-      <div
-        className={`font-mono font-black flex items-center justify-center border transition-all duration-200 select-none hover:scale-105 ${
+      <motion.div
+        whileHover={{ scale: 1.06, y: -1 }}
+        whileTap={{ scale: 0.96 }}
+        transition={{ type: 'spring', stiffness: 400, damping: 20 }}
+        className={`font-mono font-black flex items-center justify-center border transition-colors duration-300 select-none ${
           sizeClasses[size]
         } ${info.bgClass} ${
           isMasterpiece
-            ? 'shadow-[0_0_14px_rgba(0,230,118,0.45)] ring-1 ring-emerald-400/50'
+            ? 'shadow-[0_0_18px_rgba(0,210,255,0.45)] ring-1 ring-cyan-400/50'
             : ''
         }`}
         style={{ borderColor: `${info.colorHex}88` }}
       >
-        <span>{Math.round(score)}</span>
-      </div>
+        <AnimatedScore value={score} animateOnMount={animate} />
+      </motion.div>
       {showLabel && (
         <span className="text-xs font-medium text-brand-muted tracking-wide">
           {info.label}
@@ -57,3 +64,4 @@ export const ScoreBadge: React.FC<ScoreBadgeProps> = ({
     </div>
   );
 };
+

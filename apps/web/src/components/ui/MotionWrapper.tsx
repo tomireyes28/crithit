@@ -3,6 +3,9 @@
 import React from 'react';
 import { motion, AnimatePresence, Variants } from 'framer-motion';
 
+// Curva de inercia natural (Apple / Linear style)
+export const INERTIA_EASING = [0.16, 1, 0.3, 1];
+
 interface MotionProps {
   children: React.ReactNode;
   className?: string;
@@ -11,14 +14,54 @@ interface MotionProps {
 
 export const FadeIn: React.FC<MotionProps> = ({ children, className = '', delay = 0 }) => (
   <motion.div
-    initial={{ opacity: 0, y: 14 }}
+    initial={{ opacity: 0, y: 16 }}
     animate={{ opacity: 1, y: 0 }}
-    transition={{ duration: 0.35, delay, ease: [0.25, 1, 0.5, 1] }}
+    transition={{ duration: 0.5, delay, ease: INERTIA_EASING }}
     className={className}
   >
     {children}
   </motion.div>
 );
+
+export const ScrollReveal: React.FC<
+  MotionProps & {
+    direction?: 'up' | 'down' | 'left' | 'right';
+    distance?: number;
+    duration?: number;
+    viewportAmount?: number;
+  }
+> = ({
+  children,
+  className = '',
+  delay = 0,
+  direction = 'up',
+  distance = 32,
+  duration = 0.6,
+  viewportAmount = 0.15,
+}) => {
+  const directions = {
+    up: { y: distance, x: 0 },
+    down: { y: -distance, x: 0 },
+    left: { x: distance, y: 0 },
+    right: { x: -distance, y: 0 },
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, ...directions[direction] }}
+      whileInView={{ opacity: 1, x: 0, y: 0 }}
+      viewport={{ once: true, amount: viewportAmount }}
+      transition={{
+        duration,
+        delay,
+        ease: INERTIA_EASING,
+      }}
+      className={className}
+    >
+      {children}
+    </motion.div>
+  );
+};
 
 const containerVariants: Variants = {
   hidden: { opacity: 0 },
@@ -26,18 +69,18 @@ const containerVariants: Variants = {
     opacity: 1,
     transition: {
       staggerChildren: staggerDelay,
-      delayChildren: 0.02,
+      delayChildren: 0.04,
     },
   }),
 };
 
 const itemVariants: Variants = {
-  hidden: { opacity: 0, y: 16, scale: 0.98 },
+  hidden: { opacity: 0, y: 20, scale: 0.98 },
   visible: {
     opacity: 1,
     y: 0,
     scale: 1,
-    transition: { duration: 0.35, ease: [0.25, 1, 0.5, 1] },
+    transition: { duration: 0.5, ease: INERTIA_EASING },
   },
 };
 
@@ -51,6 +94,23 @@ export const StaggerContainer: React.FC<MotionProps & { staggerDelay?: number }>
     custom={staggerDelay}
     initial="hidden"
     animate="visible"
+    className={className}
+  >
+    {children}
+  </motion.div>
+);
+
+export const ScrollStaggerContainer: React.FC<MotionProps & { staggerDelay?: number }> = ({
+  children,
+  className = '',
+  staggerDelay = 0.05,
+}) => (
+  <motion.div
+    variants={containerVariants}
+    custom={staggerDelay}
+    initial="hidden"
+    whileInView="visible"
+    viewport={{ once: true, amount: 0.1 }}
     className={className}
   >
     {children}
@@ -76,9 +136,9 @@ export const HoverLift: React.FC<MotionProps> = ({ children, className = '' }) =
 
 export const ScaleFade: React.FC<MotionProps> = ({ children, className = '', delay = 0 }) => (
   <motion.div
-    initial={{ opacity: 0, scale: 0.9 }}
+    initial={{ opacity: 0, scale: 0.92 }}
     animate={{ opacity: 1, scale: 1 }}
-    transition={{ duration: 0.25, delay, ease: 'easeOut' }}
+    transition={{ duration: 0.35, delay, ease: 'easeOut' }}
     className={className}
   >
     {children}
@@ -86,3 +146,4 @@ export const ScaleFade: React.FC<MotionProps> = ({ children, className = '', del
 );
 
 export { AnimatePresence, motion };
+

@@ -9,7 +9,7 @@ import { ListCard, ListCardData } from '@/components/lists/ListCard';
 import { ListCardSkeleton } from '@/components/lists/ListCardSkeleton';
 import { CreateListModal } from '@/components/lists/CreateListModal';
 
-export default function ListsPage() {
+function ListsContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user } = useAuth();
@@ -277,5 +277,24 @@ export default function ListsPage() {
         onListCreated={handleListCreated}
       />
     </div>
+  );
+}
+
+export default function ListsPage() {
+  return (
+    <React.Suspense
+      fallback={
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8 animate-pulse">
+          <div className="h-10 w-48 bg-brand-card/60 rounded-xl" />
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            {Array.from({ length: 8 }).map((_, idx) => (
+              <ListCardSkeleton key={idx} />
+            ))}
+          </div>
+        </div>
+      }
+    >
+      <ListsContent />
+    </React.Suspense>
   );
 }

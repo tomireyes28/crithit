@@ -7,8 +7,26 @@ async function bootstrap() {
   const logger = new Logger('CritHitBootstrap');
   const app = await NestFactory.create(AppModule);
 
+  const explicitOrigins = process.env.CORS_ORIGINS
+    ? process.env.CORS_ORIGINS.split(',').map((o) => o.trim())
+    : ['http://localhost:3000', 'http://localhost:3002'];
+
   app.enableCors({
-    origin: process.env.CORS_ORIGINS?.split(',') || ['http://localhost:3000', 'http://localhost:3002'],
+    origin: (origin, callback) => {
+      if (!origin) return callback(null, true);
+      if (explicitOrigins.includes(origin) || explicitOrigins.includes('*')) {
+        return callback(null, true);
+      }
+      if (
+        origin.endsWith('.vercel.app') ||
+        origin === 'https://crithit.gg' ||
+        origin.startsWith('http://localhost:') ||
+        origin.startsWith('http://127.0.0.1:')
+      ) {
+        return callback(null, true);
+      }
+      callback(new Error(`Origin ${origin} not allowed by CORS`));
+    },
     credentials: true,
   });
 
@@ -33,9 +51,9 @@ async function bootstrap() {
   SwaggerModule.setup('api/docs', app, document);
 
   const port = process.env.PORT || 4000;
-  await app.listen(port);
-  logger.log(`CritHit API running on http://localhost:${port}/api`);
-  logger.log(`Swagger documentation available at http://localhost:${port}/api/docs`);
+  await app.listen(port, '0.0.0.0');
+  logger.log(`CritHit API running on http://0.0.0.0:${port}/api`);
+  logger.log(`Swagger documentation available at http://0.0.0.0:${port}/api/docs`);
 }
 
 bootstrap();

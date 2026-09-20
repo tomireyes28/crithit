@@ -25,6 +25,7 @@ import {
   BookOpen,
   Layers,
 } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { PLAY_STATUS_MAP, PlayStatus } from '@crithit/shared';
 
 interface ProfileData {
@@ -517,7 +518,11 @@ export function ProfileDetailClient({
             >
               <span>Reseñas Recientes</span>
               {activeTab === 'reviews' && (
-                <div className="absolute bottom-0 inset-x-0 h-0.5 bg-brand-accent rounded-full" />
+                <motion.div
+                  layoutId="profileActiveTab"
+                  className="absolute bottom-0 inset-x-0 h-0.5 bg-brand-accent rounded-full shadow-[0_0_12px_#00D2FF]"
+                  transition={{ type: 'spring', stiffness: 480, damping: 32 }}
+                />
               )}
             </button>
 
@@ -531,7 +536,11 @@ export function ProfileDetailClient({
             >
               <span>Partidas en Diario</span>
               {activeTab === 'diary' && (
-                <div className="absolute bottom-0 inset-x-0 h-0.5 bg-brand-accent rounded-full" />
+                <motion.div
+                  layoutId="profileActiveTab"
+                  className="absolute bottom-0 inset-x-0 h-0.5 bg-brand-accent rounded-full shadow-[0_0_12px_#00D2FF]"
+                  transition={{ type: 'spring', stiffness: 480, damping: 32 }}
+                />
               )}
             </button>
 
@@ -545,7 +554,11 @@ export function ProfileDetailClient({
             >
               <span>Listas</span>
               {activeTab === 'lists' && (
-                <div className="absolute bottom-0 inset-x-0 h-0.5 bg-brand-accent rounded-full" />
+                <motion.div
+                  layoutId="profileActiveTab"
+                  className="absolute bottom-0 inset-x-0 h-0.5 bg-brand-accent rounded-full shadow-[0_0_12px_#00D2FF]"
+                  transition={{ type: 'spring', stiffness: 480, damping: 32 }}
+                />
               )}
             </button>
           </div>

@@ -72,5 +72,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function UserProfilePage({ params }: Props) {
   const profile = await getProfile(params.username);
 
-  return <ProfileDetailClient username={params.username} initialProfile={profile} />;
+  return (
+    <React.Suspense fallback={<div className="min-h-screen bg-brand-bg flex items-center justify-center text-brand-muted text-sm">Cargando perfil...</div>}>
+      <ProfileDetailClient username={params.username} initialProfile={profile} />
+    </React.Suspense>
+  );
 }
