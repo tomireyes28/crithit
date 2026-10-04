@@ -20,6 +20,7 @@ import {
 import { motion, AnimatePresence } from 'framer-motion';
 import { apiClient } from '@/lib/api';
 import { useAuth } from '@/lib/auth-context';
+import { useRealtimeNotifications } from './RealtimeNotificationsProvider';
 
 export interface NotificationItem {
   id: string;
@@ -62,7 +63,7 @@ export const NotificationDropdown: React.FC = () => {
   const { user } = useAuth();
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
-  const [unreadCount, setUnreadCount] = useState<number>(0);
+  const { unreadCount, setUnreadCount } = useRealtimeNotifications();
   const [notifications, setNotifications] = useState<NotificationItem[]>([]);
   const [filter, setFilter] = useState<'all' | 'unread'>('all');
   const [isLoading, setIsLoading] = useState(false);

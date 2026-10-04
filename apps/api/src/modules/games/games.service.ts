@@ -4,6 +4,7 @@ import { IgdbService } from './igdb.service';
 import { RawgService } from './rawg.service';
 import { GameQueryDto } from './dto/game-query.dto';
 import { Prisma } from '@prisma/client';
+import { CacheService } from '../cache/cache.service';
 
 @Injectable()
 export class GamesService {
@@ -13,6 +14,7 @@ export class GamesService {
     private readonly prisma: PrismaService,
     private readonly igdbService: IgdbService,
     private readonly rawgService: RawgService,
+    private readonly cacheService: CacheService,
   ) {}
 
   /**
@@ -222,7 +224,11 @@ export class GamesService {
    * Obtiene los juegos más populares por período (semana, mes o histórico) con ranking numérico y métricas de hype.
    */
   async getPopularWeekly(timeframe: 'week' | 'month' | 'all_time' = 'week', limit = 10) {
-    try {
+    const cacheKey = `games:popular-weekly:${timeframe}:${limit}`;
+    return this.cacheService.wrap(
+      cacheKey,
+      async () => {
+        try {
       let orderBy: Prisma.GameOrderByWithRelationInput[] = [];
 
       switch (timeframe) {
@@ -298,13 +304,16 @@ export class GamesService {
       };
     } catch (err: any) {
       this.logger.warn(`Fallback activado para getPopularWeekly: ${err.message}`);
-      return {
-        timeframe,
-        data: this.getPopularWeeklyFallback(timeframe, limit),
-        total: limit,
-      };
-    }
-  }
+        return {
+          timeframe,
+          data: this.getPopularWeeklyFallback(timeframe, limit),
+          total: limit,
+        };
+      }
+    },
+    120, // 2 minutos de TTL
+  );
+}
 
   private getPopularWeeklyFallback(timeframe: string, limit = 10) {
     const fallbackList = [
@@ -467,17 +476,25 @@ export class GamesService {
   }
 
   /**
-   * Obtiene los juegos en tendencia.
+   * Obtiene los juegos en tendencia (con caché ultra-rápida de 2 min).
    */
   async getTrending(limit = 8) {
-    return this.findAll({ sort: 'trending', limit, page: 1 });
+    return this.cacheService.wrap(
+      `games:trending:${limit}`,
+      () => this.findAll({ sort: 'trending', limit, page: 1 }),
+      120,
+    );
   }
 
   /**
-   * Obtiene los juegos mejor puntuados.
+   * Obtiene los juegos mejor puntuados (con caché de 3 min).
    */
   async getTopRated(limit = 8) {
-    return this.findAll({ sort: 'score', limit, page: 1 });
+    return this.cacheService.wrap(
+      `games:top-rated:${limit}`,
+      () => this.findAll({ sort: 'score', limit, page: 1 }),
+      180,
+    );
   }
 
   /**
@@ -520,23 +537,33 @@ export class GamesService {
   }
 
   /**
-   * Obtiene la lista de todos los géneros disponibles.
+   * Obtiene la lista de todos los géneros disponibles (con caché de 10 min).
    */
   async getGenres() {
-    return this.prisma.genre.findMany({
-      orderBy: { name: 'asc' },
-      select: { id: true, name: true, slug: true },
-    });
+    return this.cacheService.wrap(
+      'games:genres',
+      () =>
+        this.prisma.genre.findMany({
+          orderBy: { name: 'asc' },
+          select: { id: true, name: true, slug: true },
+        }),
+      600,
+    );
   }
 
   /**
-   * Obtiene la lista de todas las plataformas disponibles.
+   * Obtiene la lista de todas las plataformas disponibles (con caché de 10 min).
    */
   async getPlatforms() {
-    return this.prisma.platform.findMany({
-      orderBy: { name: 'asc' },
-      select: { id: true, name: true, slug: true, abbreviation: true },
-    });
+    return this.cacheService.wrap(
+      'games:platforms',
+      () =>
+        this.prisma.platform.findMany({
+          orderBy: { name: 'asc' },
+          select: { id: true, name: true, slug: true, abbreviation: true },
+        }),
+      600,
+    );
   }
 
   /**
@@ -598,7 +625,10 @@ export class GamesService {
    * El "Critic vs Community Gap" es uno de los sellos distintivos de debate en CritHit.
    */
   async getPolarizing(limit = 10, category: 'all' | 'critics_favor' | 'community_favor' = 'all') {
-    try {
+    return this.cacheService.wrap(
+      `games:polarizing:${category}:${limit}`,
+      async () => {
+        try {
       const where: Prisma.GameWhereInput = {
         criticScore: { not: null, gt: 0 },
         communityScore: { not: null, gt: 0 },
@@ -819,6 +849,9 @@ export class GamesService {
     }
 
     return filtered.slice(0, limit);
+      },
+      180, // 3 minutos de TTL
+    );
   }
 }
 

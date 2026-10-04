@@ -14,6 +14,7 @@ import {
   CreateReviewCommentDto,
 } from './dto/review.dto';
 import { Prisma } from '@prisma/client';
+import { CacheService } from '../cache/cache.service';
 
 @Injectable()
 export class ReviewsService {
@@ -23,6 +24,7 @@ export class ReviewsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly notificationsService: NotificationsService,
+    private readonly cacheService: CacheService,
   ) {}
 
   /**
@@ -168,6 +170,9 @@ export class ReviewsService {
         totalReviews: (game.communityCount || 0) + totalCritHitReviews,
       },
     });
+
+    // Invalidar caché de listas de juegos, populares y polarizantes
+    await this.cacheService.delByPattern('games:*').catch(() => {});
   }
 
   /**

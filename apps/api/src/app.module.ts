@@ -11,6 +11,7 @@ import { ActivityModule } from './modules/activity/activity.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { CriticsModule } from './modules/critics/critics.module';
 import { NewsModule } from './modules/news/news.module';
+import { CacheModule } from './modules/cache/cache.module';
 import { AppController } from './app.controller';
 
 @Module({
@@ -20,6 +21,7 @@ import { AppController } from './app.controller';
       envFilePath: ['.env', '../../.env'],
     }),
     PrismaModule,
+    CacheModule,
     AuthModule,
     GamesModule,
     ReviewsModule,

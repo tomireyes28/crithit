@@ -2,12 +2,16 @@ import { Injectable, NotFoundException, Logger, OnModuleInit } from '@nestjs/com
 import { PrismaService } from '../../prisma/prisma.service';
 import { NewsQueryDto } from './dto/news.dto';
 import { NewsCategory, Prisma } from '@prisma/client';
+import { CacheService } from '../cache/cache.service';
 
 @Injectable()
 export class NewsService implements OnModuleInit {
   private readonly logger = new Logger(NewsService.name);
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly cacheService: CacheService,
+  ) {}
 
   async onModuleInit() {
     try {
@@ -70,28 +74,34 @@ export class NewsService implements OnModuleInit {
   }
 
   /**
-   * Obtiene el artículo destacado principal (para el Hero Banner)
+   * Obtiene el artículo destacado principal (para el Hero Banner) con caché de 3 min
    */
   async getFeatured() {
-    const featured = await this.prisma.newsArticle.findFirst({
-      where: {
-        imageUrl: { not: null },
-      },
-      orderBy: { publishedAt: 'desc' },
-      include: {
-        games: {
-          select: {
-            id: true,
-            name: true,
-            slug: true,
-            coverUrl: true,
-            communityScore: true,
+    return this.cacheService.wrap(
+      'news:featured',
+      async () => {
+        const featured = await this.prisma.newsArticle.findFirst({
+          where: {
+            imageUrl: { not: null },
           },
-        },
-      },
-    });
+          orderBy: { publishedAt: 'desc' },
+          include: {
+            games: {
+              select: {
+                id: true,
+                name: true,
+                slug: true,
+                coverUrl: true,
+                communityScore: true,
+              },
+            },
+          },
+        });
 
-    return featured;
+        return featured;
+      },
+      180, // 3 minutos de TTL
+    );
   }
 
   /**
