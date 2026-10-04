@@ -10,7 +10,11 @@ export class NewsService implements OnModuleInit {
   constructor(private readonly prisma: PrismaService) {}
 
   async onModuleInit() {
-    await this.seedInitialNews();
+    try {
+      await this.seedInitialNews();
+    } catch (err: any) {
+      this.logger.warn(`No se pudo ejecutar seedInitialNews en arranque: ${err.message}`);
+    }
   }
 
   /**

@@ -19,22 +19,26 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
 import { NotificationDropdown } from '@/components/notifications/NotificationDropdown';
+import { CommandPaletteModal } from '@/components/navigation/CommandPaletteModal';
 
 export const Navbar = () => {
   const router = useRouter();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
-  const [navSearch, setNavSearch] = useState('');
+  const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
   const { user, logout } = useAuth();
 
-  const handleNavSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (navSearch.trim()) {
-      router.push(`/games?search=${encodeURIComponent(navSearch.trim())}`);
-      setNavSearch('');
-      setMobileMenuOpen(false);
-    }
-  };
+  // Atajo de teclado global Cmd+K / Ctrl+K
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setIsCommandPaletteOpen((prev) => !prev);
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
 
   return (
     <nav className="sticky top-0 z-50 bg-brand-bg/85 backdrop-blur-md border-b border-brand-border/60 transition-colors">
@@ -112,17 +116,19 @@ export const Navbar = () => {
 
           {/* Search bar & Auth Actions */}
           <div className="hidden md:flex items-center gap-4">
-            {/* Search Input */}
-            <form onSubmit={handleNavSearch} className="relative w-60">
-              <input
-                type="text"
-                value={navSearch}
-                onChange={(e) => setNavSearch(e.target.value)}
-                placeholder="Buscar juegos..."
-                className="w-full bg-brand-card/90 border border-brand-border/80 rounded-xl pl-9 pr-4 py-1.5 text-sm text-brand-text placeholder-brand-muted focus:outline-none focus:border-brand-primary focus:ring-1 focus:ring-brand-primary transition-all"
-              />
-              <Search className="w-4 h-4 text-brand-muted absolute left-3 top-2.5" />
-            </form>
+            {/* Command Palette Trigger (Desktop) */}
+            <button
+              onClick={() => setIsCommandPaletteOpen(true)}
+              className="flex items-center justify-between w-60 lg:w-64 bg-brand-card/90 hover:bg-brand-surface/90 border border-brand-border/80 hover:border-brand-secondary/40 rounded-xl pl-3 pr-2.5 py-1.5 text-xs text-brand-muted hover:text-white transition-all group shadow-inner"
+            >
+              <div className="flex items-center gap-2 min-w-0">
+                <Search className="w-3.5 h-3.5 text-brand-muted group-hover:text-brand-secondary transition-colors flex-shrink-0" />
+                <span className="truncate">Buscar juegos, listas...</span>
+              </div>
+              <kbd className="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-[10px] font-mono font-bold bg-brand-bg/90 border border-brand-border/80 text-brand-muted group-hover:text-brand-secondary flex-shrink-0">
+                <span>⌘</span>K
+              </kbd>
+            </button>
 
             {/* Notification Bell & Dropdown */}
             {user && <NotificationDropdown />}
@@ -243,8 +249,15 @@ export const Navbar = () => {
             )}
           </div>
 
-          {/* Mobile menu toggle */}
-          <div className="flex md:hidden items-center">
+          {/* Mobile menu toggle & quick search */}
+          <div className="flex md:hidden items-center gap-1">
+            <button
+              onClick={() => setIsCommandPaletteOpen(true)}
+              className="p-2 rounded-xl text-brand-muted hover:text-white hover:bg-brand-surface transition-colors"
+              aria-label="Buscar"
+            >
+              <Search className="w-5 h-5 text-brand-secondary" />
+            </button>
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className="p-2 rounded-lg text-brand-muted hover:text-white hover:bg-brand-surface focus:outline-none"
@@ -258,16 +271,19 @@ export const Navbar = () => {
       {/* Mobile menu */}
       {mobileMenuOpen && (
         <div className="md:hidden bg-brand-card/95 border-b border-brand-border px-4 pt-2 pb-6 space-y-3">
-          <form onSubmit={handleNavSearch} className="relative mb-3">
-            <input
-              type="text"
-              value={navSearch}
-              onChange={(e) => setNavSearch(e.target.value)}
-              placeholder="Buscar juegos..."
-              className="w-full bg-brand-surface border border-brand-border rounded-lg pl-9 pr-4 py-2 text-sm text-brand-text placeholder-brand-muted focus:outline-none focus:border-brand-primary"
-            />
-            <Search className="w-4 h-4 text-brand-muted absolute left-3 top-3" />
-          </form>
+          <button
+            onClick={() => {
+              setMobileMenuOpen(false);
+              setIsCommandPaletteOpen(true);
+            }}
+            className="w-full flex items-center justify-between p-2.5 rounded-xl bg-brand-surface border border-brand-border text-xs text-brand-muted hover:text-white transition-colors mb-3"
+          >
+            <div className="flex items-center gap-2">
+              <Search className="w-4 h-4 text-brand-secondary" />
+              <span>Buscar juegos, usuarios, listas...</span>
+            </div>
+            <span className="font-mono text-[10px] bg-brand-bg px-1.5 py-0.5 rounded border border-brand-border">⌘K</span>
+          </button>
           <Link
             href="/games"
             onClick={() => setMobileMenuOpen(false)}
@@ -377,6 +393,12 @@ export const Navbar = () => {
           </div>
         </div>
       )}
+
+      {/* Command Palette Modal */}
+      <CommandPaletteModal
+        isOpen={isCommandPaletteOpen}
+        onClose={() => setIsCommandPaletteOpen(false)}
+      />
     </nav>
   );
 };

@@ -15,6 +15,25 @@ export class GamesController {
     return this.gamesService.findAll(query);
   }
 
+  @Get('popular-weekly')
+  @ApiOperation({ summary: 'Obtener los juegos más populares por período (semana, mes o histórico)' })
+  @ApiResponse({ status: 200, description: 'Juegos más populares del período con ranking' })
+  async getPopularWeekly(
+    @Query('timeframe') timeframe?: 'week' | 'month' | 'all_time',
+    @Query('limit') limit?: number,
+  ) {
+    return this.gamesService.getPopularWeekly(timeframe, limit ? Number(limit) : 10);
+  }
+
+  @Get('trending-weekly')
+  @ApiOperation({ summary: 'Alias para popular-weekly' })
+  async getTrendingWeekly(
+    @Query('timeframe') timeframe?: 'week' | 'month' | 'all_time',
+    @Query('limit') limit?: number,
+  ) {
+    return this.gamesService.getPopularWeekly(timeframe, limit ? Number(limit) : 10);
+  }
+
   @Get('trending')
   @ApiOperation({ summary: 'Obtener los juegos en mayor tendencia actual' })
   @ApiResponse({ status: 200, description: 'Juegos en tendencia' })

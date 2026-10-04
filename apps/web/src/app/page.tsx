@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { ScoreSlider } from '@/components/ui/ScoreSlider';
 import { ScoreBadge } from '@/components/ui/ScoreBadge';
 import { GameCard } from '@/components/games/GameCard';
+import { WeeklyRankedSection } from '@/components/home/WeeklyRankedSection';
 import {
   FadeIn,
   StaggerContainer,
@@ -29,75 +30,18 @@ import {
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api';
 
-const FEATURED_GAMES_FALLBACK = [
-  {
-    id: '1',
-    name: 'Elden Ring: Shadow of the Erdtree',
-    slug: 'elden-ring-shadow-of-the-erdtree',
-    coverUrl: 'https://images.igdb.com/igdb/image/upload/t_cover_big/co7vde.jpg',
-    communityScore: 94,
-    criticScore: 96,
-    firstReleaseDate: '2024-06-21',
-    genres: ['RPG', 'Acción'],
-    platforms: ['PC', 'PS5', 'Xbox Series X'],
-  },
-  {
-    id: '2',
-    name: 'Black Myth: Wukong',
-    slug: 'black-myth-wukong',
-    coverUrl: 'https://images.igdb.com/igdb/image/upload/t_cover_big/co8j9a.jpg',
-    communityScore: 89,
-    criticScore: 82,
-    firstReleaseDate: '2024-08-20',
-    genres: ['Acción', 'Aventura'],
-    platforms: ['PC', 'PS5'],
-  },
-  {
-    id: '3',
-    name: 'Hades II',
-    slug: 'hades-ii',
-    coverUrl: 'https://images.igdb.com/igdb/image/upload/t_cover_big/co5zpp.jpg',
-    communityScore: 92,
-    criticScore: 90,
-    firstReleaseDate: '2024-05-06',
-    genres: ['Roguelike', 'Indie'],
-    platforms: ['PC'],
-  },
-  {
-    id: '4',
-    name: 'Metaphor: ReFantazio',
-    slug: 'metaphor-refantazio',
-    coverUrl: 'https://images.igdb.com/igdb/image/upload/t_cover_big/co6s98.jpg',
-    communityScore: 91,
-    criticScore: 93,
-    firstReleaseDate: '2024-10-11',
-    genres: ['JRPG', 'Estrategia'],
-    platforms: ['PC', 'PS5', 'Xbox Series X'],
-  },
-];
-
 export default function HomePage() {
   const [demoScore, setDemoScore] = useState<number>(88);
-  const [trendingGames, setTrendingGames] = useState<any[]>(FEATURED_GAMES_FALLBACK);
   const [recentReviews, setRecentReviews] = useState<any[]>([]);
 
   useEffect(() => {
-    // Fetch live trending games
-    fetch(`${API_URL}/games?limit=4&sort=popular`)
-      .then((res) => (res.ok ? res.json() : null))
-      .then((data) => {
-        if (data?.items && data.items.length > 0) {
-          setTrendingGames(data.items);
-        }
-      })
-      .catch(() => {});
-
     // Fetch live recent reviews
     fetch(`${API_URL}/reviews?limit=3&sort=recent`)
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
-        if (data?.items && data.items.length > 0) {
-          setRecentReviews(data.items);
+        const items = data?.data || data?.items || [];
+        if (items.length > 0) {
+          setRecentReviews(items);
         }
       })
       .catch(() => {});
@@ -167,31 +111,9 @@ export default function HomePage() {
         <ScoreSlider value={demoScore} onChange={setDemoScore} />
       </FadeIn>
 
-      {/* Featured Games Section */}
-      <ScrollReveal className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <TrendingUp className="w-5 h-5 text-brand-secondary" />
-            <h2 className="text-xl sm:text-2xl font-black text-white">
-              En Tendencia esta Semana
-            </h2>
-          </div>
-          <Link
-            href="/games?sort=popular"
-            className="text-xs sm:text-sm font-semibold text-brand-secondary hover:underline flex items-center gap-1"
-          >
-            Ver catálogo completo
-            <ArrowRight className="w-4 h-4" />
-          </Link>
-        </div>
-
-        <ScrollStaggerContainer className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-6">
-          {trendingGames.map((game) => (
-            <StaggerItem key={game.id}>
-              <GameCard game={game} />
-            </StaggerItem>
-          ))}
-        </ScrollStaggerContainer>
+      {/* Ranked Weekly Games Section */}
+      <ScrollReveal>
+        <WeeklyRankedSection />
       </ScrollReveal>
 
       {/* Live Community Reviews Section */}
