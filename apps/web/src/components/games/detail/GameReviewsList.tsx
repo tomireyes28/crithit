@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { ScoreBadge } from '@/components/ui/ScoreBadge';
 import { useAuth } from '@/lib/auth-context';
 import { apiClient } from '@/lib/api';
+import { MessageSquare } from 'lucide-react';
+import { ReviewCommentsSection } from '@/components/reviews/ReviewCommentsSection';
 
 export interface GameReviewsListProps {
   gameName: string;
@@ -19,6 +21,7 @@ export interface GameReviewsListProps {
     playedHours?: number | null;
     playtimeAtReview?: number | null;
     likeCount: number;
+    commentCount?: number;
     hasLiked?: boolean;
     createdAt: string;
     user: {
@@ -44,18 +47,23 @@ export const GameReviewsList: React.FC<GameReviewsListProps> = ({
   const [likesState, setLikesState] = useState<
     Record<string, { hasLiked: boolean; likeCount: number }>
   >({});
+  const [expandedComments, setExpandedComments] = useState<Record<string, boolean>>({});
+  const [commentCounts, setCommentCounts] = useState<Record<string, number>>({});
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-  // Sincronizar estado de likes cuando cambian las reseñas
+  // Sincronizar estado de likes y comentarios cuando cambian las reseñas
   useEffect(() => {
     const initial: Record<string, { hasLiked: boolean; likeCount: number }> = {};
+    const initialCounts: Record<string, number> = {};
     reviews.forEach((r) => {
       initial[r.id] = {
         hasLiked: Boolean(r.hasLiked),
         likeCount: r.likeCount || 0,
       };
+      initialCounts[r.id] = r.commentCount || 0;
     });
     setLikesState(initial);
+    setCommentCounts(initialCounts);
   }, [reviews]);
 
   const showToast = (msg: string) => {
@@ -266,8 +274,8 @@ export const GameReviewsList: React.FC<GameReviewsListProps> = ({
                   </div>
                 )}
 
-                {/* Pie de la Reseña: Likes interactivos */}
-                <div className="pt-2 flex items-center gap-4 text-xs text-brand-muted">
+                {/* Pie de la Reseña: Likes y Debate Comunitario */}
+                <div className="pt-2 flex items-center gap-3 text-xs text-brand-muted">
                   <button
                     onClick={() => handleToggleLike(rev.id)}
                     className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg transition-colors ${
@@ -280,7 +288,40 @@ export const GameReviewsList: React.FC<GameReviewsListProps> = ({
                     <span className="font-mono font-medium">{likeInfo.likeCount}</span>
                     <span className="hidden sm:inline">me gusta</span>
                   </button>
+
+                  <button
+                    onClick={() =>
+                      setExpandedComments((prev) => ({
+                        ...prev,
+                        [rev.id]: !prev[rev.id],
+                      }))
+                    }
+                    className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg transition-colors ${
+                      expandedComments[rev.id]
+                        ? 'text-brand-secondary bg-brand-secondary/15 border border-brand-secondary/30'
+                        : 'hover:text-brand-secondary hover:bg-brand-bg/60'
+                    }`}
+                  >
+                    <MessageSquare className="w-3.5 h-3.5" />
+                    <span className="font-mono font-medium">
+                      {commentCounts[rev.id] ?? rev.commentCount ?? 0}
+                    </span>
+                    <span className="hidden sm:inline">
+                      {expandedComments[rev.id] ? 'ocultar debate' : 'comentarios'}
+                    </span>
+                  </button>
                 </div>
+
+                {/* Sección interactiva de comentarios desplegable */}
+                {expandedComments[rev.id] && (
+                  <ReviewCommentsSection
+                    reviewId={rev.id}
+                    initialCount={commentCounts[rev.id] ?? rev.commentCount ?? 0}
+                    onCountChange={(cnt) =>
+                      setCommentCounts((prev) => ({ ...prev, [rev.id]: cnt }))
+                    }
+                  />
+                )}
               </div>
             );
           })}

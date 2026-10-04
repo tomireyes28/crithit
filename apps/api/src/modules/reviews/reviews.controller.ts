@@ -11,7 +11,11 @@ import {
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { ReviewsService } from './reviews.service';
-import { CreateReviewDto, ReviewQueryDto } from './dto/review.dto';
+import {
+  CreateReviewDto,
+  ReviewQueryDto,
+  CreateReviewCommentDto,
+} from './dto/review.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 
@@ -72,6 +76,38 @@ export class ReviewsController {
   @ApiResponse({ status: 200, description: 'Detalle de la reseña' })
   async findById(@Param('id') id: string, @Req() req: any) {
     return this.reviewsService.findById(id, req.user?.id);
+  }
+
+  @Get(':id/comments')
+  @ApiOperation({ summary: 'Obtener comentarios e hilos de respuestas de una reseña' })
+  @ApiResponse({ status: 200, description: 'Lista jerárquica de comentarios' })
+  async getComments(@Param('id') id: string, @Req() req: any) {
+    return this.reviewsService.getComments(id, req.user?.id);
+  }
+
+  @Post(':id/comments')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Publicar un comentario o respuesta en una reseña' })
+  @ApiResponse({ status: 201, description: 'Comentario publicado' })
+  async createComment(
+    @CurrentUser() user: any,
+    @Param('id') id: string,
+    @Body() dto: CreateReviewCommentDto,
+  ) {
+    return this.reviewsService.createComment(user.id, id, dto);
+  }
+
+  @Delete('comments/:commentId')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Eliminar un comentario de reseña' })
+  @ApiResponse({ status: 200, description: 'Comentario eliminado' })
+  async deleteComment(
+    @CurrentUser() user: any,
+    @Param('commentId') commentId: string,
+  ) {
+    return this.reviewsService.deleteComment(user.id, commentId, user.role);
   }
 
   @Delete(':id')

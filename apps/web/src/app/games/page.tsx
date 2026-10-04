@@ -20,6 +20,7 @@ import {
   RotateCcw,
   Loader2,
 } from 'lucide-react';
+import { PolarizingShowcase } from '@/components/games/PolarizingShowcase';
 
 interface GenreItem {
   id: string;
@@ -455,6 +456,11 @@ function GamesCatalog() {
           </button>
         </div>
       )}
+
+      {/* Módulo Especial: Medidor de Polarización & El Gran Debate */}
+      <div className="pt-6">
+        <PolarizingShowcase />
+      </div>
     </div>
   );
 }

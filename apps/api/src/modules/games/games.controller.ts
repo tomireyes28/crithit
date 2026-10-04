@@ -82,6 +82,16 @@ export class GamesController {
     return this.gamesService.getPlatforms();
   }
 
+  @Get('polarizing')
+  @ApiOperation({ summary: 'Obtener videojuegos con mayor discrepancia entre notas de críticos y comunidad' })
+  @ApiResponse({ status: 200, description: 'Lista de juegos polarizantes con índice de brecha' })
+  async getPolarizing(
+    @Query('limit') limit?: number,
+    @Query('category') category?: 'all' | 'critics_favor' | 'community_favor',
+  ) {
+    return this.gamesService.getPolarizing(limit ? Number(limit) : 10, category || 'all');
+  }
+
   @Get(':slug')
 
   @ApiOperation({ summary: 'Obtener la ficha detallada de un juego por su slug' })

@@ -22,6 +22,7 @@ import {
   Gamepad2,
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
+import { ReviewCommentsSection } from '@/components/reviews/ReviewCommentsSection';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api';
 
@@ -42,6 +43,8 @@ export default function ReviewsPage() {
 
   // Spoilers revealed per review ID
   const [revealedSpoilers, setRevealedSpoilers] = useState<Record<string, boolean>>({});
+  // Expanded comments per review ID
+  const [expandedComments, setExpandedComments] = useState<Record<string, boolean>>({});
 
   // Debounce search
   useEffect(() => {
@@ -443,13 +446,48 @@ export default function ReviewsPage() {
                       )}
                     </div>
 
-                    <MotionLikeButton
-                      liked={rev.isLiked}
-                      count={rev.likeCount}
-                      onToggle={() => handleLikeToggle(rev.id)}
-                      size="sm"
-                    />
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() =>
+                          setExpandedComments((prev) => ({
+                            ...prev,
+                            [rev.id]: !prev[rev.id],
+                          }))
+                        }
+                        className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
+                          expandedComments[rev.id]
+                            ? 'bg-brand-secondary/20 text-brand-secondary border border-brand-secondary/40'
+                            : 'bg-brand-surface/60 hover:bg-brand-surface text-brand-muted hover:text-white border border-brand-border/40'
+                        }`}
+                      >
+                        <MessageSquare className="w-3.5 h-3.5" />
+                        <span>{rev.commentCount || 0}</span>
+                        <span className="hidden sm:inline">
+                          {expandedComments[rev.id] ? 'Cerrar' : 'Comentar'}
+                        </span>
+                      </button>
+
+                      <MotionLikeButton
+                        liked={rev.isLiked}
+                        count={rev.likeCount}
+                        onToggle={() => handleLikeToggle(rev.id)}
+                        size="sm"
+                      />
+                    </div>
                   </div>
+
+                  {/* Sección expandible de comentarios */}
+                  {expandedComments[rev.id] && (
+                    <ReviewCommentsSection
+                      reviewId={rev.id}
+                      initialCount={rev.commentCount || 0}
+                      onCountChange={(cnt) => {
+                        setReviews((prev) =>
+                          prev.map((r) => (r.id === rev.id ? { ...r, commentCount: cnt } : r)),
+                        );
+                      }}
+                    />
+                  )}
                 </div>
               </StaggerItem>
             );

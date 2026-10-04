@@ -131,3 +131,16 @@ export class ReviewQueryDto {
   @IsString()
   search?: string;
 }
+
+export class CreateReviewCommentDto {
+  @ApiProperty({ description: 'Cuerpo o texto del comentario', minLength: 1, maxLength: 2000 })
+  @IsString({ message: 'El comentario debe ser texto válido' })
+  @IsNotEmpty({ message: 'El comentario no puede estar vacío' })
+  body: string;
+
+  @ApiPropertyOptional({ description: 'ID del comentario padre si es una respuesta anidada' })
+  @IsOptional()
+  @IsString()
+  parentId?: string;
+}
+

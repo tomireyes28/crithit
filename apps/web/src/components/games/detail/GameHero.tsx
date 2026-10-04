@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { Scale } from 'lucide-react';
 import { ScoreBadge } from '@/components/ui/ScoreBadge';
 import { AnimatedScore } from '@/components/ui/AnimatedScore';
+import { CriticCommunityGapMeter } from '@/components/games/CriticCommunityGapMeter';
 
 export interface GameHeroProps {
   game: {
@@ -214,6 +215,23 @@ export const GameHero: React.FC<GameHeroProps> = ({ game }) => {
                 )}
               </div>
             </div>
+
+            {/* Medidor de Polarización (Critic vs Community Gap) si hay brecha significativa */}
+            {game.criticScore !== null &&
+              game.criticScore !== undefined &&
+              game.communityScore !== null &&
+              game.communityScore !== undefined &&
+              Math.abs(game.criticScore - game.communityScore) >= 6 && (
+                <div className="mt-4">
+                  <CriticCommunityGapMeter
+                    criticScore={game.criticScore}
+                    communityScore={game.communityScore}
+                    criticCount={game.criticCount}
+                    communityCount={game.communityCount}
+                    compact={true}
+                  />
+                </div>
+              )}
           </div>
         </div>
       </div>
