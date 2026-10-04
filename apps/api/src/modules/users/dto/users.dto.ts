@@ -68,3 +68,53 @@ export class SetFavoritesDto {
   @Type(() => FavoriteItemDto)
   favorites: FavoriteItemDto[];
 }
+
+export class ImportSteamDto {
+  @ApiProperty({ description: 'Steam ID numérico de 17 dígitos o URL de perfil' })
+  @IsString()
+  steamId: string;
+}
+
+export class CsvRowDto {
+  @ApiProperty({ description: 'Nombre o título del juego' })
+  @IsString()
+  title: string;
+
+  @ApiPropertyOptional({ description: 'Calificación original (1-5, 1-10 o 0-100)' })
+  @IsOptional()
+  rating?: number | string;
+
+  @ApiPropertyOptional({ description: 'Horas dedicadas' })
+  @IsOptional()
+  hours?: number;
+
+  @ApiPropertyOptional({ description: 'Estado del juego (playing, completed, backlog, dropped)' })
+  @IsOptional()
+  status?: string;
+
+  @ApiPropertyOptional({ description: 'Reseña u opinión' })
+  @IsOptional()
+  review?: string;
+
+  @ApiPropertyOptional({ description: 'Fecha de registro' })
+  @IsOptional()
+  date?: string;
+}
+
+export class ImportCsvDto {
+  @ApiPropertyOptional({
+    description: 'Formato de origen del archivo',
+    default: 'auto',
+    enum: ['backloggd', 'letterboxd', 'auto'],
+  })
+  @IsOptional()
+  @IsString()
+  format?: 'backloggd' | 'letterboxd' | 'auto';
+
+  @ApiProperty({ description: 'Filas extraídas del archivo CSV', type: [CsvRowDto] })
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => CsvRowDto)
+  rows: CsvRowDto[];
+}
+

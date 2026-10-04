@@ -5,11 +5,17 @@ import {
   Put,
   Body,
   Param,
+  Query,
   UseGuards,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
 import { UsersService } from './users.service';
-import { UpdateProfileDto, SetFavoritesDto } from './dto/users.dto';
+import {
+  UpdateProfileDto,
+  SetFavoritesDto,
+  ImportSteamDto,
+  ImportCsvDto,
+} from './dto/users.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { OptionalJwtAuthGuard } from '../auth/guards/optional-jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
@@ -18,6 +24,41 @@ import { CurrentUser } from '../auth/decorators/current-user.decorator';
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
+
+  @Post('import/steam')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Importar biblioteca y horas jugadas desde Steam' })
+  @ApiResponse({ status: 200, description: 'Juegos importados desde Steam' })
+  async importSteam(
+    @CurrentUser('id') userId: string,
+    @Body() dto: ImportSteamDto,
+  ) {
+    return this.usersService.importSteam(userId, dto);
+  }
+
+  @Post('import/csv')
+  @UseGuards(JwtAuthGuard)
+  @ApiBearerAuth()
+  @ApiOperation({ summary: 'Importar registros desde archivo CSV de Backloggd o Letterboxd' })
+  @ApiResponse({ status: 200, description: 'Registros importados y mapeados a escala 0-100' })
+  async importCsv(
+    @CurrentUser('id') userId: string,
+    @Body() dto: ImportCsvDto,
+  ) {
+    return this.usersService.importCsv(userId, dto);
+  }
+
+  @Get(':username/wrapped')
+  @ApiOperation({ summary: 'Obtener el resumen anual Wrapped / Year in Review del usuario' })
+  @ApiResponse({ status: 200, description: 'Estadísticas anuales, GOTY y arquetipo de jugador' })
+  async getWrapped(
+    @Param('username') username: string,
+    @Query('year') year?: number,
+  ) {
+    const targetYear = year ? Number(year) : new Date().getFullYear();
+    return this.usersService.getWrapped(username, targetYear);
+  }
 
   @Get(':username')
   @ApiOperation({ summary: 'Obtener el perfil público de un usuario por su @username' })

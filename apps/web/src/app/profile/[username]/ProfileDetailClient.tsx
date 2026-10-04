@@ -24,6 +24,8 @@ import {
   MessageSquare,
   BookOpen,
   Layers,
+  Sparkles,
+  UploadCloud,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { PLAY_STATUS_MAP, PlayStatus } from '@crithit/shared';
@@ -405,38 +407,59 @@ export function ProfileDetailClient({
             </div>
           </div>
 
-          {/* Botón de Acción: Editar Perfil o Seguir */}
-          {isOwner ? (
-            <button
-              onClick={() => setIsEditProfileModalOpen(true)}
-              className="px-4 py-2 rounded-xl text-xs font-bold bg-brand-surface hover:bg-brand-border/60 border border-brand-border text-brand-text transition-colors flex items-center gap-1.5 shadow-sm"
+          {/* Botones de Acción */}
+          <div className="flex flex-wrap items-center gap-2">
+            <Link
+              href={`/profile/${profile.user.username}/wrapped`}
+              className="px-3.5 py-2 rounded-xl text-xs font-bold bg-gradient-to-r from-amber-500/20 via-rose-500/20 to-purple-500/20 hover:from-amber-500/30 hover:to-purple-500/30 border border-amber-500/40 text-amber-300 transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(245,158,11,0.2)]"
             >
-              <Settings className="w-3.5 h-3.5" />
-              <span>Editar Perfil</span>
-            </button>
-          ) : (
-            <button
-              disabled={isFollowLoading}
-              onClick={handleToggleFollow}
-              className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${
-                isFollowing
-                  ? 'bg-brand-surface hover:bg-rose-500/10 border border-brand-border hover:border-rose-500/40 text-brand-muted hover:text-rose-400'
-                  : 'bg-brand-accent text-brand-bg hover:brightness-110 shadow-lg shadow-brand-accent/20'
-              }`}
-            >
-              {isFollowing ? (
-                <>
-                  <UserCheck className="w-3.5 h-3.5 text-emerald-400" />
-                  <span>Siguiendo</span>
-                </>
-              ) : (
-                <>
-                  <UserPlus className="w-3.5 h-3.5" />
-                  <span>Seguir</span>
-                </>
-              )}
-            </button>
-          )}
+              <Sparkles className="w-3.5 h-3.5 text-amber-400 animate-pulse" />
+              <span>Wrapped 2024</span>
+            </Link>
+
+            {isOwner ? (
+              <>
+                <Link
+                  href="/settings/import"
+                  className="px-3.5 py-2 rounded-xl text-xs font-bold bg-brand-surface hover:bg-brand-border/60 border border-brand-border text-brand-text transition-colors flex items-center gap-1.5 shadow-sm"
+                  title="Importar biblioteca desde Steam o archivos CSV"
+                >
+                  <UploadCloud className="w-3.5 h-3.5 text-brand-secondary" />
+                  <span>Importar</span>
+                </Link>
+
+                <button
+                  onClick={() => setIsEditProfileModalOpen(true)}
+                  className="px-4 py-2 rounded-xl text-xs font-bold bg-brand-surface hover:bg-brand-border/60 border border-brand-border text-brand-text transition-colors flex items-center gap-1.5 shadow-sm"
+                >
+                  <Settings className="w-3.5 h-3.5" />
+                  <span>Editar Perfil</span>
+                </button>
+              </>
+            ) : (
+              <button
+                disabled={isFollowLoading}
+                onClick={handleToggleFollow}
+                className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${
+                  isFollowing
+                    ? 'bg-brand-surface hover:bg-rose-500/10 border border-brand-border hover:border-rose-500/40 text-brand-muted hover:text-rose-400'
+                    : 'bg-brand-accent text-brand-bg hover:brightness-110 shadow-lg shadow-brand-accent/20'
+                }`}
+              >
+                {isFollowing ? (
+                  <>
+                    <UserCheck className="w-3.5 h-3.5 text-emerald-400" />
+                    <span>Siguiendo</span>
+                  </>
+                ) : (
+                  <>
+                    <UserPlus className="w-3.5 h-3.5" />
+                    <span>Seguir</span>
+                  </>
+                )}
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Barra de Estadísticas de Juego */}
