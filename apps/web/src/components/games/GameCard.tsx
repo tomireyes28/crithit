@@ -100,7 +100,7 @@ export const GameCard: React.FC<GameCardProps> = ({ game }) => {
           transformStyle: 'preserve-3d',
         }}
         whileTap={{ scale: 0.98 }}
-        className="h-full"
+        className={`h-full ${isHovered ? 'will-change-transform' : ''}`}
       >
         <Link
           href={`/games/${game.slug}`}

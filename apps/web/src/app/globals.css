@@ -122,6 +122,21 @@
     -webkit-mask-image: linear-gradient(to right, transparent, black 4%, black 96%, transparent);
     mask-image: linear-gradient(to right, transparent, black 4%, black 96%, transparent);
   }
+
+  /* GPU Hardware Acceleration Utilities */
+  .gpu-layer {
+    transform: translateZ(0);
+    backface-visibility: hidden;
+    perspective: 1000px;
+  }
+
+  .will-change-transform {
+    will-change: transform;
+  }
+
+  .will-change-opacity {
+    will-change: opacity;
+  }
 }
 
 /* Custom score slider input track */
@@ -129,11 +144,27 @@ input[type='range'] {
   accent-color: #6C5CE7;
 }
 
+/* Reglas estrictas de accesibilidad para usuarios con sensibilidad al movimiento */
 @media (prefers-reduced-motion: reduce) {
   *, ::before, ::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+
+  /* Desactivar bucles infinitos de ambient mesh y shimmers */
+  .animate-mesh-float-1,
+  .animate-mesh-float-2,
+  .animate-mesh-float-3,
+  .animate-float-gentle,
+  .animate-pulse-glow {
+    animation: none !important;
+    transform: none !important;
+  }
+
+  .shimmer-bg::after {
+    animation: none !important;
+    display: none !important;
   }
 }

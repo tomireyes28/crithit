@@ -4,6 +4,7 @@ import { Navbar } from '@/components/layout/Navbar';
 import { Footer } from '@/components/layout/Footer';
 import { AuthProvider } from '@/lib/auth-context';
 import { RealtimeNotificationsProvider } from '@/components/notifications/RealtimeNotificationsProvider';
+import { GlobalMotionConfig } from '@/components/ui/MotionWrapper';
 import { PwaRegister } from '@/components/pwa/PwaRegister';
 import { PwaInstallPrompt } from '@/components/pwa/PwaInstallPrompt';
 
@@ -131,13 +132,15 @@ export default function RootLayout({
 
         <AuthProvider>
           <RealtimeNotificationsProvider>
-            <PwaRegister />
-            <Navbar />
-            <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 relative z-10">
-              {children}
-            </main>
-            <Footer />
-            <PwaInstallPrompt />
+            <GlobalMotionConfig>
+              <PwaRegister />
+              <Navbar />
+              <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 relative z-10">
+                {children}
+              </main>
+              <Footer />
+              <PwaInstallPrompt />
+            </GlobalMotionConfig>
           </RealtimeNotificationsProvider>
         </AuthProvider>
       </body>

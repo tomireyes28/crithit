@@ -4,6 +4,7 @@ import React, { useRef, useState } from 'react';
 import {
   motion,
   AnimatePresence,
+  MotionConfig,
   Variants,
   useMotionValue,
   useSpring,
@@ -350,6 +351,12 @@ export const TiltCard: React.FC<
     stiffness: 200,
   });
 
+  const [isInteracting, setIsInteracting] = useState(false);
+
+  const handleMouseEnter = () => {
+    if (!shouldReduceMotion) setIsInteracting(true);
+  };
+
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
     if (shouldReduceMotion || !cardRef.current) return;
     const rect = cardRef.current.getBoundingClientRect();
@@ -360,6 +367,7 @@ export const TiltCard: React.FC<
   };
 
   const handleMouseLeave = () => {
+    setIsInteracting(false);
     mouseX.set(0);
     mouseY.set(0);
   };
@@ -367,6 +375,7 @@ export const TiltCard: React.FC<
   return (
     <motion.div
       ref={cardRef}
+      onMouseEnter={handleMouseEnter}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
       style={{
@@ -374,12 +383,22 @@ export const TiltCard: React.FC<
         rotateX: shouldReduceMotion ? 0 : rotateX,
         rotateY: shouldReduceMotion ? 0 : rotateY,
       }}
-      className={className}
+      className={`${className} ${isInteracting ? 'will-change-transform' : ''}`}
     >
       {children}
     </motion.div>
   );
 };
 
+/**
+ * GlobalMotionConfig: Wrapper de configuración universal de accesibilidad
+ * Activa automáticamente el respeto a prefers-reduced-motion: reduce a nivel de Framer Motion
+ */
+export const GlobalMotionConfig: React.FC<{ children: React.ReactNode }> = ({ children }) => (
+  <MotionConfig reducedMotion="user">
+    {children}
+  </MotionConfig>
+);
+
 export * from './MotionButtons';
-export { AnimatePresence, motion };
+export { AnimatePresence, motion, MotionConfig };
