@@ -17,7 +17,7 @@ import {
   ChevronRight,
 } from 'lucide-react';
 import { ScoreBadge } from '@/components/ui/ScoreBadge';
-import { AnimatedScore } from '@/components/ui/AnimatedScore';
+import { RollingNumber } from '@/components/ui/AnimatedScore';
 import { HoverLift } from '@/components/ui/MotionWrapper';
 
 export interface RankedGame {
@@ -441,7 +441,13 @@ function PodiumCard({
             <div className="flex items-center gap-1.5 text-xs font-bold text-amber-400">
               <Flame className="w-4 h-4 fill-amber-400/20 text-amber-400 animate-pulse" />
               <span>
-                {game.weeklyEngagement ? `${game.weeklyEngagement.toLocaleString()} jugando` : 'Muy popular'}
+                {game.weeklyEngagement ? (
+                  <>
+                    <RollingNumber value={game.weeklyEngagement} separator /> jugando
+                  </>
+                ) : (
+                  'Muy popular'
+                )}
               </span>
             </div>
 
