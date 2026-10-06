@@ -95,28 +95,19 @@ export default function HomePage() {
         </div>
       </FadeIn>
 
-      {/* Interactive Score Slider Demo with Spotlight tracking */}
-      <FadeIn delay={0.1}>
-        <SpotlightCard
-          spotlightColor="rgba(108, 92, 231, 0.12)"
-          spotlightSize={500}
-          className="max-w-2xl mx-auto glass-card-v2 p-6 sm:p-8 rounded-3xl border border-white/[0.08] shadow-2xl space-y-5"
-        >
-          <div className="flex items-center justify-between">
-            <div>
-              <h2 className="text-lg font-black text-white flex items-center gap-2">
-                <Sparkles className="w-4 h-4 text-brand-secondary" />
-                La Granularidad Importa
-              </h2>
-              <p className="text-xs text-brand-muted mt-0.5">
-                Prueba la escala 0-100 continua en vivo. Sin estrellas rígidas.
-              </p>
-            </div>
-            <ScoreBadge score={demoScore} size="lg" showLabel />
-          </div>
+      {/* Interactive Score Slider Demo */}
+      <FadeIn delay={0.1} className="max-w-2xl mx-auto space-y-4">
+        <div className="text-center space-y-1 mb-2">
+          <h2 className="text-xl sm:text-2xl font-black text-white flex items-center justify-center gap-2">
+            <Sparkles className="w-5 h-5 text-brand-secondary" />
+            La Granularidad Importa
+          </h2>
+          <p className="text-xs sm:text-sm text-brand-muted">
+            Prueba la escala 0-100 continua en vivo con halo ambiental reactivo. Sin estrellas rígidas.
+          </p>
+        </div>
 
-          <ScoreSlider value={demoScore} onChange={setDemoScore} />
-        </SpotlightCard>
+        <ScoreSlider value={demoScore} onChange={setDemoScore} />
       </FadeIn>
 
       {/* Ranked Weekly Games Section */}
