@@ -20,6 +20,7 @@ import {
 import { useAuth } from '@/lib/auth-context';
 import { NotificationDropdown } from '@/components/notifications/NotificationDropdown';
 import { CommandPaletteModal } from '@/components/navigation/CommandPaletteModal';
+import { MagneticHover, BouncyTap } from '@/components/ui/MotionWrapper';
 
 export const Navbar = () => {
   const router = useRouter();
@@ -44,21 +45,23 @@ export const Navbar = () => {
     <nav className="sticky top-0 z-50 bg-[#0A0E1A]/80 backdrop-blur-2xl border-b border-white/[0.08] shadow-[0_4px_30px_rgba(0,0,0,0.5)] transition-all">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          {/* Brand Logo */}
+          {/* Brand Logo with Magnetic attraction */}
           <div className="flex items-center gap-8">
-            <Link href="/" className="flex items-center gap-2.5 group">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-primary via-indigo-600 to-brand-secondary flex items-center justify-center shadow-[0_0_20px_rgba(108,92,231,0.4)] group-hover:shadow-[0_0_28px_rgba(0,210,255,0.6)] group-hover:scale-105 transition-all duration-300">
-                <Gamepad2 className="w-6 h-6 text-white" />
-              </div>
-              <div className="flex flex-col">
-                <span className="text-xl font-black tracking-tight text-white flex items-center gap-1 font-sans">
-                  Crit<span className="text-brand-secondary">Hit</span>
-                  <span className="text-[10px] uppercase font-mono px-1.5 py-0.5 bg-brand-primary/30 text-brand-secondary border border-brand-secondary/30 rounded-md ml-1">
-                    0-100
+            <MagneticHover pullDistance={6}>
+              <Link href="/" className="flex items-center gap-2.5 group">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-brand-primary via-indigo-600 to-brand-secondary flex items-center justify-center shadow-[0_0_20px_rgba(108,92,231,0.4)] group-hover:shadow-[0_0_28px_rgba(0,210,255,0.6)] group-hover:scale-105 transition-all duration-300">
+                  <Gamepad2 className="w-6 h-6 text-white" />
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-xl font-black tracking-tight text-white flex items-center gap-1 font-sans">
+                    Crit<span className="text-brand-secondary">Hit</span>
+                    <span className="text-[10px] uppercase font-mono px-1.5 py-0.5 bg-brand-primary/30 text-brand-secondary border border-brand-secondary/30 rounded-md ml-1">
+                      0-100
+                    </span>
                   </span>
-                </span>
-              </div>
-            </Link>
+                </div>
+              </Link>
+            </MagneticHover>
 
             {/* Desktop Navigation Links */}
             <div className="hidden md:flex items-center gap-1">
@@ -238,13 +241,15 @@ export const Navbar = () => {
                 >
                   Iniciar Sesión
                 </Link>
-                <Link
-                  href="/register"
-                  className="px-4 py-2 text-sm font-semibold text-white bg-brand-primary hover:bg-brand-primary-hover rounded-xl shadow-glow-primary transition-all duration-200 flex items-center gap-1.5"
-                >
-                  <Sparkles className="w-4 h-4" />
-                  Crear Cuenta
-                </Link>
+                <BouncyTap scaleOnHover={1.04} scaleOnTap={0.96}>
+                  <Link
+                    href="/register"
+                    className="px-4 py-2 text-sm font-semibold text-white bg-brand-primary hover:bg-brand-primary-hover rounded-xl shadow-glow-primary transition-all duration-200 flex items-center gap-1.5"
+                  >
+                    <Sparkles className="w-4 h-4" />
+                    Crear Cuenta
+                  </Link>
+                </BouncyTap>
               </div>
             )}
           </div>

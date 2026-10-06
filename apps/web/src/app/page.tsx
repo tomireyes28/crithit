@@ -13,6 +13,8 @@ import {
   HoverLift,
   ScrollReveal,
   ScrollStaggerContainer,
+  SpotlightCard,
+  BouncyTap,
 } from '@/components/ui/MotionWrapper';
 import {
   Sparkles,
@@ -72,7 +74,7 @@ export default function HomePage() {
         </p>
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2">
-          <HoverLift>
+          <BouncyTap>
             <Link
               href="/games"
               className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-xl font-bold text-white bg-brand-primary hover:bg-brand-primary-hover shadow-glow-primary transition-all text-sm sm:text-base"
@@ -80,8 +82,8 @@ export default function HomePage() {
               <Compass className="w-5 h-5" />
               Explorar Catálogo
             </Link>
-          </HoverLift>
-          <HoverLift>
+          </BouncyTap>
+          <BouncyTap>
             <Link
               href="/critics"
               className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-xl font-bold text-brand-text bg-brand-surface/80 hover:bg-brand-surface border border-brand-border/80 hover:border-brand-secondary/40 transition-all text-sm sm:text-base backdrop-blur-md"
@@ -89,26 +91,32 @@ export default function HomePage() {
               <Award className="w-5 h-5 text-brand-secondary" />
               Acreditación de Críticos
             </Link>
-          </HoverLift>
+          </BouncyTap>
         </div>
       </FadeIn>
 
-      {/* Interactive Score Slider Demo */}
-      <FadeIn delay={0.1} className="max-w-2xl mx-auto glass-panel p-6 sm:p-8 rounded-3xl border border-brand-border/60 shadow-2xl space-y-5">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-lg font-black text-white flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-brand-secondary" />
-              La Granularidad Importa
-            </h2>
-            <p className="text-xs text-brand-muted mt-0.5">
-              Prueba la escala 0-100 continua en vivo. Sin estrellas rígidas.
-            </p>
+      {/* Interactive Score Slider Demo with Spotlight tracking */}
+      <FadeIn delay={0.1}>
+        <SpotlightCard
+          spotlightColor="rgba(108, 92, 231, 0.12)"
+          spotlightSize={500}
+          className="max-w-2xl mx-auto glass-card-v2 p-6 sm:p-8 rounded-3xl border border-white/[0.08] shadow-2xl space-y-5"
+        >
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-lg font-black text-white flex items-center gap-2">
+                <Sparkles className="w-4 h-4 text-brand-secondary" />
+                La Granularidad Importa
+              </h2>
+              <p className="text-xs text-brand-muted mt-0.5">
+                Prueba la escala 0-100 continua en vivo. Sin estrellas rígidas.
+              </p>
+            </div>
+            <ScoreBadge score={demoScore} size="lg" showLabel />
           </div>
-          <ScoreBadge score={demoScore} size="lg" showLabel />
-        </div>
 
-        <ScoreSlider value={demoScore} onChange={setDemoScore} />
+          <ScoreSlider value={demoScore} onChange={setDemoScore} />
+        </SpotlightCard>
       </FadeIn>
 
       {/* Ranked Weekly Games Section */}
@@ -212,9 +220,13 @@ export default function HomePage() {
       )}
 
       {/* Feature Pillars Grid */}
-      <ScrollReveal className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4">
-        <HoverLift>
-          <div className="glass-panel p-6 rounded-2xl border border-brand-border/60 space-y-3 h-full">
+      <ScrollStaggerContainer className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4">
+        <StaggerItem>
+          <SpotlightCard
+            spotlightColor="rgba(0, 210, 255, 0.12)"
+            spotlightSize={320}
+            className="glass-card-v2 p-6 rounded-2xl border border-white/[0.08] hover:border-brand-primary/40 transition-colors space-y-3 h-full"
+          >
             <div className="w-10 h-10 rounded-xl bg-brand-primary/20 border border-brand-primary/40 flex items-center justify-center text-brand-primary">
               <Sparkles className="w-5 h-5" />
             </div>
@@ -222,11 +234,15 @@ export default function HomePage() {
             <p className="text-sm text-brand-muted leading-relaxed">
               ¿Un 7.5 no alcanza a expresar lo que sentiste? Usa una escala continua y justa del 0 al 100 con histogramas de distribución completos.
             </p>
-          </div>
-        </HoverLift>
+          </SpotlightCard>
+        </StaggerItem>
 
-        <HoverLift>
-          <div className="glass-panel p-6 rounded-2xl border border-brand-border/60 space-y-3 h-full">
+        <StaggerItem>
+          <SpotlightCard
+            spotlightColor="rgba(108, 92, 231, 0.12)"
+            spotlightSize={320}
+            className="glass-card-v2 p-6 rounded-2xl border border-white/[0.08] hover:border-brand-secondary/40 transition-colors space-y-3 h-full"
+          >
             <div className="w-10 h-10 rounded-xl bg-brand-secondary/20 border border-brand-secondary/40 flex items-center justify-center text-brand-secondary">
               <Award className="w-5 h-5" />
             </div>
@@ -234,11 +250,15 @@ export default function HomePage() {
             <p className="text-sm text-brand-muted leading-relaxed">
               Rinde el test de acreditación para validar tu criterio sobre diseño, historia y análisis. Gana tu insignia y haz que tu voz cuente en el Critic Score.
             </p>
-          </div>
-        </HoverLift>
+          </SpotlightCard>
+        </StaggerItem>
 
-        <HoverLift>
-          <div className="glass-panel p-6 rounded-2xl border border-brand-border/60 space-y-3 h-full">
+        <StaggerItem>
+          <SpotlightCard
+            spotlightColor="rgba(16, 185, 129, 0.12)"
+            spotlightSize={320}
+            className="glass-card-v2 p-6 rounded-2xl border border-white/[0.08] hover:border-brand-tertiary/40 transition-colors space-y-3 h-full"
+          >
             <div className="w-10 h-10 rounded-xl bg-brand-tertiary/20 border border-brand-tertiary/40 flex items-center justify-center text-brand-tertiary">
               <BookOpen className="w-5 h-5" />
             </div>
@@ -246,9 +266,9 @@ export default function HomePage() {
             <p className="text-sm text-brand-muted leading-relaxed">
               Organiza tu biblioteca en Jugando, Completado, 100% / Mastered y Backlog. Registra las horas dedicadas e importa tu progreso.
             </p>
-          </div>
-        </HoverLift>
-      </ScrollReveal>
+          </SpotlightCard>
+        </StaggerItem>
+      </ScrollStaggerContainer>
 
       {/* Final Call to Action */}
       <ScrollReveal className="relative overflow-hidden bg-gradient-to-r from-brand-surface via-brand-card to-brand-surface border border-brand-primary/40 rounded-3xl p-8 sm:p-14 text-center space-y-6 shadow-glow-primary">
@@ -261,8 +281,8 @@ export default function HomePage() {
         <p className="text-brand-muted max-w-xl mx-auto text-sm sm:text-base relative z-10">
           Crea tu perfil en segundos, pinnea tus 4 juegos favoritos en tu vitrina y comienza a calificar con precisión.
         </p>
-        <div className="pt-2 relative z-10">
-          <HoverLift>
+        <div className="pt-2 relative z-10 flex justify-center">
+          <BouncyTap scaleOnHover={1.04} scaleOnTap={0.96}>
             <Link
               href="/register"
               className="inline-flex items-center gap-2 px-8 py-4 rounded-xl font-bold text-white bg-brand-primary hover:bg-brand-primary-hover shadow-glow-primary transition-all text-base"
@@ -270,7 +290,7 @@ export default function HomePage() {
               <Users className="w-5 h-5" />
               Crear mi Perfil en CritHit
             </Link>
-          </HoverLift>
+          </BouncyTap>
         </div>
       </ScrollReveal>
     </div>
