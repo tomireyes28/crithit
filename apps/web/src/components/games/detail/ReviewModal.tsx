@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { ScoreSlider } from '@/components/ui/ScoreSlider';
 import { apiClient } from '@/lib/api';
 import { motion, AnimatePresence } from 'framer-motion';
+import { SPRING_SNAPPY, BouncyTap } from '@/components/ui/MotionWrapper';
 import {
   X,
   AlertTriangle,
@@ -100,7 +101,6 @@ export const ReviewModal: React.FC<ReviewModalProps> = ({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, onClose]);
 
-  if (!isOpen) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -157,261 +157,290 @@ export const ReviewModal: React.FC<ReviewModalProps> = ({
   };
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 overflow-y-auto bg-black/80 backdrop-blur-md"
-      onClick={onClose}
-    >
-      <motion.div
-        initial={{ opacity: 0, scale: 0.94, y: 16 }}
-        animate={{ opacity: 1, scale: 1, y: 0 }}
-        exit={{ opacity: 0, scale: 0.94, y: 16 }}
-        transition={{ type: 'spring', damping: 25, stiffness: 350 }}
-        className="relative w-full max-w-2xl bg-brand-surface border border-brand-border/80 rounded-3xl shadow-2xl shadow-black overflow-hidden my-8"
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Cabecera del Modal */}
-        <div className="flex items-center justify-between p-6 border-b border-brand-border/60 bg-brand-bg/40">
-          <div className="flex items-center gap-4">
-            {game.coverUrl ? (
-              <img
-                src={game.coverUrl}
-                alt={game.name}
-                className="w-12 h-16 object-cover rounded-lg border border-brand-border shadow"
-              />
-            ) : (
-              <div className="w-12 h-16 rounded-lg bg-brand-surface border border-brand-border flex items-center justify-center text-brand-muted">
-                <Gamepad2 className="w-6 h-6" />
+    <AnimatePresence>
+      {isOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 overflow-y-auto"
+          onClick={onClose}
+        >
+          {/* Backdrop con desenfoque de cristal */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="fixed inset-0 bg-black/80 backdrop-blur-xl"
+          />
+
+          {/* Ventana Modal con física elástica SPRING_SNAPPY */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.94, y: 16 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.94, y: 16 }}
+            transition={SPRING_SNAPPY}
+            className="relative w-full max-w-2xl bg-brand-surface/95 border border-white/10 rounded-3xl shadow-[0_25px_60px_-15px_rgba(0,0,0,0.85),0_0_40px_rgba(34,197,94,0.08)] overflow-hidden my-8 glass-panel-v2 z-10"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Micro-línea de luz superior */}
+            <div className="absolute top-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-brand-secondary/40 to-transparent pointer-events-none" />
+
+            {/* Cabecera del Modal */}
+            <div className="flex items-center justify-between p-6 border-b border-white/5 bg-brand-bg/40">
+              <div className="flex items-center gap-4">
+                {game.coverUrl ? (
+                  <img
+                    src={game.coverUrl}
+                    alt={game.name}
+                    className="w-12 h-16 object-cover rounded-lg border border-brand-border shadow"
+                  />
+                ) : (
+                  <div className="w-12 h-16 rounded-lg bg-brand-surface border border-brand-border flex items-center justify-center text-brand-muted">
+                    <Gamepad2 className="w-6 h-6" />
+                  </div>
+                )}
+                <div>
+                  <span className="text-xs uppercase font-mono tracking-wider text-brand-muted">
+                    {existingReview ? 'Editar Calificación' : 'Puntuar & Reseñar'}
+                  </span>
+                  <h3 className="text-lg sm:text-xl font-black text-brand-text line-clamp-1">
+                    {game.name}
+                  </h3>
+                </div>
+              </div>
+
+              <BouncyTap scaleOnHover={1.1} scaleOnTap={0.9}>
+                <button
+                  onClick={onClose}
+                  className="w-9 h-9 rounded-full bg-brand-surface hover:bg-brand-border/60 text-brand-muted hover:text-white flex items-center justify-center transition-colors border border-white/5"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </BouncyTap>
+            </div>
+
+            {/* Mensaje de Error */}
+            {errorMessage && (
+              <div className="p-4 bg-rose-500/15 border-b border-rose-500/30 text-rose-400 text-xs sm:text-sm font-medium flex items-center gap-2">
+                <AlertTriangle className="w-4 h-4 flex-shrink-0" />
+                <span>{errorMessage}</span>
               </div>
             )}
-            <div>
-              <span className="text-xs uppercase font-mono tracking-wider text-brand-muted">
-                {existingReview ? 'Editar Calificación' : 'Puntuar & Reseñar'}
-              </span>
-              <h3 className="text-lg sm:text-xl font-black text-brand-text line-clamp-1">
-                {game.name}
-              </h3>
-            </div>
-          </div>
 
-          <button
-            onClick={onClose}
-            className="w-9 h-9 rounded-full bg-brand-surface hover:bg-brand-border/60 text-brand-muted hover:text-brand-text flex items-center justify-center transition-colors"
-          >
-            <X className="w-4 h-4" />
-          </button>
-        </div>
+            {/* Formulario */}
+            <form onSubmit={handleSubmit} className="p-6 space-y-6 max-h-[75vh] overflow-y-auto">
+              {/* 1. Score Slider Interactivo (0-100) */}
+              <div className="space-y-2">
+                <label className="text-xs font-bold uppercase tracking-wider text-brand-muted block">
+                  1. Puntuación (0 al 100)
+                </label>
+                <ScoreSlider
+                  value={score}
+                  onChange={(val) => setScore(val)}
+                  disabled={isSubmitting}
+                />
+              </div>
 
-        {/* Mensaje de Error */}
-        {errorMessage && (
-          <div className="p-4 bg-rose-500/15 border-b border-rose-500/30 text-rose-400 text-xs sm:text-sm font-medium flex items-center gap-2">
-            <AlertTriangle className="w-4 h-4 flex-shrink-0" />
-            <span>{errorMessage}</span>
-          </div>
-        )}
-
-        {/* Formulario */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-6 max-h-[75vh] overflow-y-auto">
-          {/* 1. Score Slider Interactivo (0-100) */}
-          <div className="space-y-2">
-            <label className="text-xs font-bold uppercase tracking-wider text-brand-muted block">
-              1. Puntuación (0 al 100)
-            </label>
-            <ScoreSlider
-              value={score}
-              onChange={(val) => setScore(val)}
-              disabled={isSubmitting}
-            />
-          </div>
-
-          {/* 2. Título de la Reseña */}
-          <div className="space-y-1.5">
-            <div className="flex justify-between items-center">
-              <label className="text-xs font-bold uppercase tracking-wider text-brand-muted">
-                2. Título (Opcional)
-              </label>
-              <span className="text-[11px] text-brand-muted font-mono">
-                {title.length}/120
-              </span>
-            </div>
-            <input
-              type="text"
-              maxLength={120}
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="Ej: Una obra maestra imprescindible..."
-              className="w-full px-4 py-2.5 rounded-xl bg-brand-bg border border-brand-border focus:border-brand-secondary focus:outline-none text-sm text-brand-text transition-colors placeholder:text-brand-muted/60"
-            />
-          </div>
-
-          {/* 3. Análisis / Opinión Escrita */}
-          <div className="space-y-1.5">
-            <div className="flex justify-between items-center">
-              <label className="text-xs font-bold uppercase tracking-wider text-brand-muted">
-                3. Reseña u Opinión (Opcional)
-              </label>
-              <span className="text-[11px] text-brand-muted font-mono">
-                {body.length}/10,000
-              </span>
-            </div>
-            <textarea
-              rows={5}
-              maxLength={10000}
-              value={body}
-              onChange={(e) => setBody(e.target.value)}
-              placeholder="Escribe tu análisis sobre el juego: diseño, música, jugabilidad, historia, sensaciones..."
-              className="w-full px-4 py-2.5 rounded-xl bg-brand-bg border border-brand-border focus:border-brand-secondary focus:outline-none text-sm text-brand-text transition-colors resize-y placeholder:text-brand-muted/60 leading-relaxed"
-            />
-          </div>
-
-          {/* 4. Metadatos de la Partida */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
-            {/* Plataforma */}
-            <div>
-              <label className="text-xs font-bold text-brand-muted block mb-1">
-                Plataforma Jugada
-              </label>
-              {game.platforms && game.platforms.length > 0 ? (
-                <select
-                  value={platform}
-                  onChange={(e) => setPlatform(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-brand-bg border border-brand-border focus:border-brand-secondary focus:outline-none text-xs text-brand-text"
-                >
-                  <option value="">Seleccionar plataforma</option>
-                  {game.platforms.map((p) => (
-                    <option key={p.id} value={p.name}>
-                      {p.name}
-                    </option>
-                  ))}
-                </select>
-              ) : (
+              {/* 2. Título de la Reseña */}
+              <div className="space-y-1.5">
+                <div className="flex justify-between items-center">
+                  <label className="text-xs font-bold uppercase tracking-wider text-brand-muted">
+                    2. Título (Opcional)
+                  </label>
+                  <span className="text-[11px] text-brand-muted font-mono">
+                    {title.length}/120
+                  </span>
+                </div>
                 <input
                   type="text"
-                  value={platform}
-                  onChange={(e) => setPlatform(e.target.value)}
-                  placeholder="Ej: PC, PS5, Switch..."
-                  className="w-full px-3 py-2 rounded-xl bg-brand-bg border border-brand-border focus:border-brand-secondary focus:outline-none text-xs text-brand-text"
+                  maxLength={120}
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  placeholder="Ej: Una obra maestra imprescindible..."
+                  className="w-full px-4 py-2.5 rounded-xl bg-brand-bg border border-brand-border focus:border-brand-secondary focus:outline-none text-sm text-brand-text transition-colors placeholder:text-brand-muted/60"
                 />
-              )}
-            </div>
+              </div>
 
-            {/* Horas de Juego */}
-            <div>
-              <label className="text-xs font-bold text-brand-muted block mb-1">
-                Horas Dedicadas
-              </label>
-              <div className="relative">
-                <input
-                  type="number"
-                  min="0"
-                  max="9999"
-                  step="0.5"
-                  value={playtime}
-                  onChange={(e) => setPlaytime(e.target.value)}
-                  placeholder="Ej: 45.5"
-                  className="w-full pl-8 pr-3 py-2 rounded-xl bg-brand-bg border border-brand-border focus:border-brand-secondary focus:outline-none text-xs text-brand-text"
+              {/* 3. Análisis / Opinión Escrita */}
+              <div className="space-y-1.5">
+                <div className="flex justify-between items-center">
+                  <label className="text-xs font-bold uppercase tracking-wider text-brand-muted">
+                    3. Reseña u Opinión (Opcional)
+                  </label>
+                  <span className="text-[11px] text-brand-muted font-mono">
+                    {body.length}/10,000
+                  </span>
+                </div>
+                <textarea
+                  rows={5}
+                  maxLength={10000}
+                  value={body}
+                  onChange={(e) => setBody(e.target.value)}
+                  placeholder="Escribe tu análisis sobre el juego: diseño, música, jugabilidad, historia, sensaciones..."
+                  className="w-full px-4 py-2.5 rounded-xl bg-brand-bg border border-brand-border focus:border-brand-secondary focus:outline-none text-sm text-brand-text transition-colors resize-y placeholder:text-brand-muted/60 leading-relaxed"
                 />
-                <Clock className="w-3.5 h-3.5 text-brand-muted absolute left-2.5 top-2.5" />
               </div>
-            </div>
 
-            {/* Recomendación */}
-            <div>
-              <label className="text-xs font-bold text-brand-muted block mb-1">
-                ¿Lo recomiendas?
-              </label>
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  onClick={() => setRecommends(recommends === true ? null : true)}
-                  className={`flex-1 py-2 rounded-xl text-xs font-bold border transition-colors flex items-center justify-center gap-1.5 ${
-                    recommends === true
-                      ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/50'
-                      : 'bg-brand-bg border-brand-border text-brand-muted hover:text-brand-text'
-                  }`}
-                >
-                  <ThumbsUp className="w-3.5 h-3.5" />
-                  <span>Sí</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setRecommends(recommends === false ? null : false)}
-                  className={`flex-1 py-2 rounded-xl text-xs font-bold border transition-colors flex items-center justify-center gap-1.5 ${
-                    recommends === false
-                      ? 'bg-rose-500/20 text-rose-400 border-rose-500/50'
-                      : 'bg-brand-bg border-brand-border text-brand-muted hover:text-brand-text'
-                  }`}
-                >
-                  <ThumbsDown className="w-3.5 h-3.5" />
-                  <span>No</span>
-                </button>
+              {/* 4. Metadatos de la Partida */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-2">
+                {/* Plataforma */}
+                <div>
+                  <label className="text-xs font-bold text-brand-muted block mb-1">
+                    Plataforma Jugada
+                  </label>
+                  {game.platforms && game.platforms.length > 0 ? (
+                    <select
+                      value={platform}
+                      onChange={(e) => setPlatform(e.target.value)}
+                      className="w-full px-3 py-2 rounded-xl bg-brand-bg border border-brand-border focus:border-brand-secondary focus:outline-none text-xs text-brand-text"
+                    >
+                      <option value="">Seleccionar plataforma</option>
+                      {game.platforms.map((p) => (
+                        <option key={p.id} value={p.name}>
+                          {p.name}
+                        </option>
+                      ))}
+                    </select>
+                  ) : (
+                    <input
+                      type="text"
+                      value={platform}
+                      onChange={(e) => setPlatform(e.target.value)}
+                      placeholder="Ej: PC, PS5, Switch..."
+                      className="w-full px-3 py-2 rounded-xl bg-brand-bg border border-brand-border focus:border-brand-secondary focus:outline-none text-xs text-brand-text"
+                    />
+                  )}
+                </div>
+
+                {/* Horas de Juego */}
+                <div>
+                  <label className="text-xs font-bold text-brand-muted block mb-1">
+                    Horas Dedicadas
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="number"
+                      min="0"
+                      max="9999"
+                      step="0.5"
+                      value={playtime}
+                      onChange={(e) => setPlaytime(e.target.value)}
+                      placeholder="Ej: 45.5"
+                      className="w-full pl-8 pr-3 py-2 rounded-xl bg-brand-bg border border-brand-border focus:border-brand-secondary focus:outline-none text-xs text-brand-text"
+                    />
+                    <Clock className="w-3.5 h-3.5 text-brand-muted absolute left-2.5 top-2.5" />
+                  </div>
+                </div>
+
+                {/* Recomendación */}
+                <div>
+                  <label className="text-xs font-bold text-brand-muted block mb-1">
+                    ¿Lo recomiendas?
+                  </label>
+                  <div className="flex gap-2">
+                    <BouncyTap scaleOnTap={0.96} className="flex-1">
+                      <button
+                        type="button"
+                        onClick={() => setRecommends(recommends === true ? null : true)}
+                        className={`w-full py-2 rounded-xl text-xs font-bold border transition-all flex items-center justify-center gap-1.5 ${
+                          recommends === true
+                            ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/50 shadow-[0_0_15px_rgba(16,185,129,0.2)]'
+                            : 'bg-brand-bg border-brand-border text-brand-muted hover:text-brand-text'
+                        }`}
+                      >
+                        <ThumbsUp className="w-3.5 h-3.5" />
+                        <span>Sí</span>
+                      </button>
+                    </BouncyTap>
+                    <BouncyTap scaleOnTap={0.96} className="flex-1">
+                      <button
+                        type="button"
+                        onClick={() => setRecommends(recommends === false ? null : false)}
+                        className={`w-full py-2 rounded-xl text-xs font-bold border transition-all flex items-center justify-center gap-1.5 ${
+                          recommends === false
+                            ? 'bg-rose-500/20 text-rose-400 border-rose-500/50 shadow-[0_0_15px_rgba(244,63,94,0.2)]'
+                            : 'bg-brand-bg border-brand-border text-brand-muted hover:text-brand-text'
+                        }`}
+                      >
+                        <ThumbsDown className="w-3.5 h-3.5" />
+                        <span>No</span>
+                      </button>
+                    </BouncyTap>
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
 
-          {/* 5. Alerta de Spoilers */}
-          <div className="pt-2">
-            <label className="flex items-center gap-3 p-3 rounded-xl bg-brand-bg/60 border border-brand-border/50 cursor-pointer hover:bg-brand-bg transition-colors">
-              <input
-                type="checkbox"
-                checked={containsSpoilers}
-                onChange={(e) => setContainsSpoilers(e.target.checked)}
-                className="w-4 h-4 rounded text-brand-secondary border-brand-border focus:ring-0 focus:ring-offset-0 bg-brand-surface cursor-pointer"
-              />
-              <div className="flex items-center gap-2 text-xs">
-                <AlertTriangle className="w-4 h-4 text-amber-400 flex-shrink-0" />
-                <span className="font-semibold text-brand-text">
-                  Esta reseña contiene spoilers de la trama
-                </span>
-                <span className="text-brand-muted hidden sm:inline">
-                  (el texto se ocultará por defecto)
-                </span>
+              {/* 5. Alerta de Spoilers */}
+              <div className="pt-2">
+                <label className="flex items-center gap-3 p-3 rounded-xl bg-brand-bg/60 border border-brand-border/50 cursor-pointer hover:bg-brand-bg transition-colors">
+                  <input
+                    type="checkbox"
+                    checked={containsSpoilers}
+                    onChange={(e) => setContainsSpoilers(e.target.checked)}
+                    className="w-4 h-4 rounded text-brand-secondary border-brand-border focus:ring-0 focus:ring-offset-0 bg-brand-surface cursor-pointer"
+                  />
+                  <div className="flex items-center gap-2 text-xs">
+                    <AlertTriangle className="w-4 h-4 text-amber-400 flex-shrink-0" />
+                    <span className="font-semibold text-brand-text">
+                      Esta reseña contiene spoilers de la trama
+                    </span>
+                    <span className="text-brand-muted hidden sm:inline">
+                      (el texto se ocultará por defecto)
+                    </span>
+                  </div>
+                </label>
               </div>
-            </label>
-          </div>
 
-          {/* Botones de Acción */}
-          <div className="pt-4 border-t border-brand-border/60 flex items-center justify-between gap-3">
-            {existingReview ? (
-              <button
-                type="button"
-                onClick={handleDelete}
-                disabled={isDeleting || isSubmitting}
-                className="px-4 py-2.5 rounded-xl text-xs font-bold text-rose-400 hover:bg-rose-500/15 border border-rose-500/30 transition-colors disabled:opacity-50 flex items-center gap-1.5"
-              >
-                <Trash2 className="w-3.5 h-3.5" />
-                {isDeleting ? 'Eliminando...' : 'Eliminar reseña'}
-              </button>
-            ) : (
-              <div />
-            )}
-
-            <div className="flex items-center gap-3">
-              <button
-                type="button"
-                onClick={onClose}
-                disabled={isSubmitting || isDeleting}
-                className="px-4 py-2.5 rounded-xl text-xs font-semibold text-brand-muted hover:text-brand-text transition-colors"
-              >
-                Cancelar
-              </button>
-              <button
-                type="submit"
-                disabled={isSubmitting || isDeleting}
-                className="px-6 py-2.5 rounded-xl text-xs sm:text-sm font-bold bg-gradient-to-r from-brand-secondary to-emerald-500 text-brand-bg hover:brightness-110 shadow-lg shadow-brand-secondary/25 transition-all transform hover:-translate-y-0.5 active:translate-y-0 disabled:opacity-50 flex items-center gap-2"
-              >
-                {isSubmitting ? (
-                  <span>Guardando...</span>
+              {/* Botones de Acción */}
+              <div className="pt-4 border-t border-brand-border/60 flex items-center justify-between gap-3">
+                {existingReview ? (
+                  <BouncyTap scaleOnTap={0.95}>
+                    <button
+                      type="button"
+                      onClick={handleDelete}
+                      disabled={isDeleting || isSubmitting}
+                      className="px-4 py-2.5 rounded-xl text-xs font-bold text-rose-400 hover:bg-rose-500/15 border border-rose-500/30 transition-colors disabled:opacity-50 flex items-center gap-1.5"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                      {isDeleting ? 'Eliminando...' : 'Eliminar reseña'}
+                    </button>
+                  </BouncyTap>
                 ) : (
-                  <>
-                    <Save className="w-4 h-4" />
-                    <span>{existingReview ? 'Guardar Cambios' : 'Publicar Reseña'}</span>
-                  </>
+                  <div />
                 )}
-              </button>
-            </div>
-          </div>
-        </form>
-      </motion.div>
-    </div>
+
+                <div className="flex items-center gap-3">
+                  <BouncyTap scaleOnTap={0.95}>
+                    <button
+                      type="button"
+                      onClick={onClose}
+                      disabled={isSubmitting || isDeleting}
+                      className="px-4 py-2.5 rounded-xl text-xs font-semibold text-brand-muted hover:text-brand-text transition-colors"
+                    >
+                      Cancelar
+                    </button>
+                  </BouncyTap>
+                  <BouncyTap scaleOnHover={1.02} scaleOnTap={0.96}>
+                    <button
+                      type="submit"
+                      disabled={isSubmitting || isDeleting}
+                      className="px-6 py-2.5 rounded-xl text-xs sm:text-sm font-black bg-gradient-to-r from-brand-secondary via-emerald-400 to-brand-secondary text-brand-bg hover:brightness-110 shadow-lg shadow-brand-secondary/25 transition-all disabled:opacity-50 flex items-center gap-2"
+                    >
+                      {isSubmitting ? (
+                        <span>Guardando...</span>
+                      ) : (
+                        <>
+                          <Save className="w-4 h-4" />
+                          <span>{existingReview ? 'Guardar Cambios' : 'Publicar Reseña'}</span>
+                        </>
+                      )}
+                    </button>
+                  </BouncyTap>
+                </div>
+              </div>
+            </form>
+          </motion.div>
+        </div>
+      )}
+    </AnimatePresence>
   );
 };

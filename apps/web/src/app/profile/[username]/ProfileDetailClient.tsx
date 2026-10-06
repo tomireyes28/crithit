@@ -27,7 +27,16 @@ import {
   Sparkles,
   UploadCloud,
 } from 'lucide-react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
+import {
+  Floating,
+  BouncyTap,
+  ScrollReveal,
+  SPRING_SNAPPY,
+  SPRING_BOUNCY,
+  SPRING_GENTLE,
+} from '@/components/ui/MotionWrapper';
+import { RollingNumber } from '@/components/ui/AnimatedScore';
 import { PLAY_STATUS_MAP, PlayStatus } from '@crithit/shared';
 
 interface ProfileData {
@@ -321,25 +330,27 @@ export function ProfileDetailClient({
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-20 relative z-10 space-y-10">
         {/* Cabecera del Perfil: Avatar + Info + Botones */}
-        <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between gap-6 pb-6 border-b border-brand-border/60">
+        <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between gap-6 pb-6 border-b border-white/[0.08]">
           <div className="flex flex-col sm:flex-row items-start sm:items-end gap-5">
-            {/* Avatar */}
-            <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-3xl overflow-hidden bg-brand-card border-4 border-brand-bg shadow-2xl flex items-center justify-center text-4xl font-black text-white flex-shrink-0">
-              {profile.user.avatarUrl ? (
-                <img
-                  src={profile.user.avatarUrl}
-                  alt={profile.user.displayName}
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <span>{profile.user.displayName.charAt(0).toUpperCase()}</span>
-              )}
-            </div>
+            {/* Avatar con Levidad Armónica y Halo Neón */}
+            <Floating duration={5} distance={4}>
+              <div className="w-28 h-28 sm:w-32 sm:h-32 rounded-3xl overflow-hidden bg-brand-card border-4 border-brand-bg shadow-[0_0_30px_rgba(0,245,160,0.25)] flex items-center justify-center text-4xl font-black text-white flex-shrink-0 relative group">
+                {profile.user.avatarUrl ? (
+                  <img
+                    src={profile.user.avatarUrl}
+                    alt={profile.user.displayName}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  />
+                ) : (
+                  <span>{profile.user.displayName.charAt(0).toUpperCase()}</span>
+                )}
+              </div>
+            </Floating>
 
             {/* Nombres y Badges */}
             <div>
               <div className="flex flex-wrap items-center gap-2 mb-1">
-                <h1 className="text-2xl sm:text-3xl font-black text-brand-text">
+                <h1 className="text-2xl sm:text-3xl font-black text-white">
                   {profile.user.displayName}
                 </h1>
                 {profile.user.criticTier && (
@@ -354,7 +365,7 @@ export function ProfileDetailClient({
 
               {/* Bio */}
               {profile.user.bio && (
-                <p className="text-xs sm:text-sm text-brand-text/90 max-w-xl mb-3 leading-relaxed">
+                <p className="text-xs sm:text-sm text-brand-text/90 max-w-xl mb-3 leading-relaxed font-normal">
                   {profile.user.bio}
                 </p>
               )}
@@ -391,7 +402,9 @@ export function ProfileDetailClient({
                   onClick={() => setFollowersModalConfig({ isOpen: true, type: 'followers' })}
                   className="hover:text-brand-accent transition-colors flex items-center gap-1.5"
                 >
-                  <span className="font-bold text-white font-mono">{profile.stats.followersCount || 0}</span>
+                  <span className="font-bold text-white font-mono">
+                    <RollingNumber value={profile.stats.followersCount || 0} separator />
+                  </span>
                   <span className="text-brand-muted">seguidores</span>
                 </button>
                 <span className="text-brand-border/60">•</span>
@@ -400,7 +413,9 @@ export function ProfileDetailClient({
                   onClick={() => setFollowersModalConfig({ isOpen: true, type: 'following' })}
                   className="hover:text-brand-accent transition-colors flex items-center gap-1.5"
                 >
-                  <span className="font-bold text-white font-mono">{profile.stats.followingCount || 0}</span>
+                  <span className="font-bold text-white font-mono">
+                    <RollingNumber value={profile.stats.followingCount || 0} separator />
+                  </span>
                   <span className="text-brand-muted">siguiendo</span>
                 </button>
               </div>
@@ -409,105 +424,137 @@ export function ProfileDetailClient({
 
           {/* Botones de Acción */}
           <div className="flex flex-wrap items-center gap-2">
-            <Link
-              href={`/profile/${profile.user.username}/wrapped`}
-              className="px-3.5 py-2 rounded-xl text-xs font-bold bg-gradient-to-r from-amber-500/20 via-rose-500/20 to-purple-500/20 hover:from-amber-500/30 hover:to-purple-500/30 border border-amber-500/40 text-amber-300 transition-all flex items-center gap-1.5 shadow-[0_0_15px_rgba(245,158,11,0.2)]"
-            >
-              <Sparkles className="w-3.5 h-3.5 text-amber-400 animate-pulse" />
-              <span>Wrapped 2024</span>
-            </Link>
+            <BouncyTap>
+              <Link
+                href={`/profile/${profile.user.username}/wrapped`}
+                className="px-4 py-2.5 rounded-xl text-xs font-bold bg-gradient-to-r from-amber-500/25 via-rose-500/25 to-purple-500/25 hover:from-amber-500/35 hover:to-purple-500/35 border border-amber-500/50 text-amber-300 transition-all flex items-center gap-2 shadow-[0_0_20px_rgba(245,158,11,0.35)]"
+              >
+                <Sparkles className="w-3.5 h-3.5 text-amber-300 animate-pulse" />
+                <span>Wrapped 2024</span>
+              </Link>
+            </BouncyTap>
 
             {isOwner ? (
               <>
-                <Link
-                  href="/settings/import"
-                  className="px-3.5 py-2 rounded-xl text-xs font-bold bg-brand-surface hover:bg-brand-border/60 border border-brand-border text-brand-text transition-colors flex items-center gap-1.5 shadow-sm"
-                  title="Importar biblioteca desde Steam o archivos CSV"
-                >
-                  <UploadCloud className="w-3.5 h-3.5 text-brand-secondary" />
-                  <span>Importar</span>
-                </Link>
+                <BouncyTap>
+                  <Link
+                    href="/settings/import"
+                    className="px-3.5 py-2.5 rounded-xl text-xs font-bold glass-card-v2 border border-white/10 hover:border-white/20 text-brand-text hover:text-white transition-all flex items-center gap-1.5 shadow-sm"
+                    title="Importar biblioteca desde Steam o archivos CSV"
+                  >
+                    <UploadCloud className="w-3.5 h-3.5 text-brand-secondary" />
+                    <span>Importar</span>
+                  </Link>
+                </BouncyTap>
 
-                <button
-                  onClick={() => setIsEditProfileModalOpen(true)}
-                  className="px-4 py-2 rounded-xl text-xs font-bold bg-brand-surface hover:bg-brand-border/60 border border-brand-border text-brand-text transition-colors flex items-center gap-1.5 shadow-sm"
-                >
-                  <Settings className="w-3.5 h-3.5" />
-                  <span>Editar Perfil</span>
-                </button>
+                <BouncyTap>
+                  <button
+                    onClick={() => setIsEditProfileModalOpen(true)}
+                    className="px-4 py-2.5 rounded-xl text-xs font-bold glass-card-v2 border border-white/10 hover:border-white/20 text-brand-text hover:text-white transition-all flex items-center gap-1.5 shadow-sm"
+                  >
+                    <Settings className="w-3.5 h-3.5" />
+                    <span>Editar Perfil</span>
+                  </button>
+                </BouncyTap>
               </>
             ) : (
-              <button
-                disabled={isFollowLoading}
-                onClick={handleToggleFollow}
-                className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${
-                  isFollowing
-                    ? 'bg-brand-surface hover:bg-rose-500/10 border border-brand-border hover:border-rose-500/40 text-brand-muted hover:text-rose-400'
-                    : 'bg-brand-accent text-brand-bg hover:brightness-110 shadow-lg shadow-brand-accent/20'
-                }`}
-              >
-                {isFollowing ? (
-                  <>
-                    <UserCheck className="w-3.5 h-3.5 text-emerald-400" />
-                    <span>Siguiendo</span>
-                  </>
-                ) : (
-                  <>
-                    <UserPlus className="w-3.5 h-3.5" />
-                    <span>Seguir</span>
-                  </>
-                )}
-              </button>
+              <BouncyTap>
+                <button
+                  disabled={isFollowLoading}
+                  onClick={handleToggleFollow}
+                  className={`px-4 py-2.5 rounded-xl text-xs font-bold transition-all flex items-center gap-2 ${
+                    isFollowing
+                      ? 'glass-card-v2 hover:bg-rose-500/10 border border-white/10 hover:border-rose-500/40 text-brand-muted hover:text-rose-400'
+                      : 'bg-brand-accent text-brand-bg hover:brightness-110 shadow-lg shadow-brand-accent/20'
+                  }`}
+                >
+                  {isFollowing ? (
+                    <>
+                      <UserCheck className="w-3.5 h-3.5 text-emerald-400" />
+                      <span>Siguiendo</span>
+                    </>
+                  ) : (
+                    <>
+                      <UserPlus className="w-3.5 h-3.5" />
+                      <span>Seguir</span>
+                    </>
+                  )}
+                </button>
+              </BouncyTap>
             )}
           </div>
         </div>
 
-        {/* Barra de Estadísticas de Juego */}
+        {/* Barra de Estadísticas de Juego con Contadores Rodantes 60 FPS */}
         <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-          <div className="p-4 rounded-2xl bg-brand-surface/40 border border-brand-border/60 text-center">
+          <motion.div
+            whileHover={{ y: -3, scale: 1.02 }}
+            transition={SPRING_BOUNCY}
+            className="p-4 rounded-2xl glass-card-v2 border border-white/[0.08] hover:border-white/[0.18] text-center shadow-lg"
+          >
             <span className="block font-mono font-black text-2xl text-brand-accent">
-              {profile.stats.totalReviews}
+              <RollingNumber value={profile.stats.totalReviews} separator />
             </span>
             <span className="text-[11px] font-semibold text-brand-muted uppercase tracking-wider">
               Calificaciones
             </span>
-          </div>
+          </motion.div>
 
-          <div className="p-4 rounded-2xl bg-brand-surface/40 border border-brand-border/60 text-center">
+          <motion.div
+            whileHover={{ y: -3, scale: 1.02 }}
+            transition={SPRING_BOUNCY}
+            className="p-4 rounded-2xl glass-card-v2 border border-white/[0.08] hover:border-white/[0.18] text-center shadow-lg"
+          >
             <span className="block font-mono font-black text-2xl text-blue-400">
-              {profile.stats.totalLoggedPlays}
+              <RollingNumber value={profile.stats.totalLoggedPlays} separator />
             </span>
             <span className="text-[11px] font-semibold text-brand-muted uppercase tracking-wider">
               En Diario
             </span>
-          </div>
+          </motion.div>
 
-          <div className="p-4 rounded-2xl bg-brand-surface/40 border border-brand-border/60 text-center">
+          <motion.div
+            whileHover={{ y: -3, scale: 1.02 }}
+            transition={SPRING_BOUNCY}
+            className="p-4 rounded-2xl glass-card-v2 border border-white/[0.08] hover:border-white/[0.18] text-center shadow-lg"
+          >
             <span className="block font-mono font-black text-2xl text-emerald-400">
-              {Math.round(profile.stats.totalHoursPlayed)}h
+              <RollingNumber
+                value={Math.round(profile.stats.totalHoursPlayed)}
+                suffix="h"
+                separator
+              />
             </span>
             <span className="text-[11px] font-semibold text-brand-muted uppercase tracking-wider">
               Horas Jugadas
             </span>
-          </div>
+          </motion.div>
 
-          <div className="p-4 rounded-2xl bg-brand-surface/40 border border-brand-border/60 text-center">
+          <motion.div
+            whileHover={{ y: -3, scale: 1.02 }}
+            transition={SPRING_BOUNCY}
+            className="p-4 rounded-2xl glass-card-v2 border border-white/[0.08] hover:border-white/[0.18] text-center shadow-lg"
+          >
             <span className="block font-mono font-black text-2xl text-amber-400">
-              {profile.stats.completedGames}
+              <RollingNumber value={profile.stats.completedGames} separator />
             </span>
             <span className="text-[11px] font-semibold text-brand-muted uppercase tracking-wider">
               Completados
             </span>
-          </div>
+          </motion.div>
 
-          <div className="col-span-2 sm:col-span-1 p-4 rounded-2xl bg-brand-surface/40 border border-brand-border/60 text-center flex flex-col items-center justify-center">
+          <motion.div
+            whileHover={{ y: -3, scale: 1.02 }}
+            transition={SPRING_BOUNCY}
+            className="col-span-2 sm:col-span-1 p-4 rounded-2xl glass-card-v2 border border-white/[0.08] hover:border-white/[0.18] text-center flex flex-col items-center justify-center shadow-lg"
+          >
             <div className="mb-0.5">
               <ScoreBadge score={profile.stats.averageScore} size="sm" />
             </div>
             <span className="text-[11px] font-semibold text-brand-muted uppercase tracking-wider mt-1">
               Nota Media
             </span>
-          </div>
+          </motion.div>
         </div>
 
         {/* Vitrina Favorite Four */}
@@ -530,197 +577,218 @@ export function ProfileDetailClient({
 
         {/* Pestañas de Actividad: Reseñas & Diario */}
         <section className="space-y-6">
-          <div className="flex items-center gap-4 border-b border-brand-border/60 pb-2">
-            <button
-              onClick={() => setActiveTab('reviews')}
-              className={`text-sm font-bold pb-2 transition-all relative ${
-                activeTab === 'reviews'
-                  ? 'text-brand-text'
-                  : 'text-brand-muted hover:text-brand-text'
-              }`}
-            >
-              <span>Reseñas Recientes</span>
-              {activeTab === 'reviews' && (
-                <motion.div
-                  layoutId="profileActiveTab"
-                  className="absolute bottom-0 inset-x-0 h-0.5 bg-brand-accent rounded-full shadow-[0_0_12px_#00D2FF]"
-                  transition={{ type: 'spring', stiffness: 480, damping: 32 }}
-                />
-              )}
-            </button>
+          <div className="flex items-center gap-4 border-b border-white/[0.08] pb-2">
+            <BouncyTap>
+              <button
+                onClick={() => setActiveTab('reviews')}
+                className={`text-sm font-bold pb-2 transition-all relative ${
+                  activeTab === 'reviews'
+                    ? 'text-white'
+                    : 'text-brand-muted hover:text-white'
+                }`}
+              >
+                <span>Reseñas Recientes</span>
+                {activeTab === 'reviews' && (
+                  <motion.div
+                    layoutId="profileActiveTab"
+                    className="absolute bottom-0 inset-x-0 h-0.5 bg-brand-accent rounded-full shadow-[0_0_12px_#00D2FF]"
+                    transition={SPRING_SNAPPY}
+                  />
+                )}
+              </button>
+            </BouncyTap>
 
-            <button
-              onClick={() => setActiveTab('diary')}
-              className={`text-sm font-bold pb-2 transition-all relative ${
-                activeTab === 'diary'
-                  ? 'text-brand-text'
-                  : 'text-brand-muted hover:text-brand-text'
-              }`}
-            >
-              <span>Partidas en Diario</span>
-              {activeTab === 'diary' && (
-                <motion.div
-                  layoutId="profileActiveTab"
-                  className="absolute bottom-0 inset-x-0 h-0.5 bg-brand-accent rounded-full shadow-[0_0_12px_#00D2FF]"
-                  transition={{ type: 'spring', stiffness: 480, damping: 32 }}
-                />
-              )}
-            </button>
+            <BouncyTap>
+              <button
+                onClick={() => setActiveTab('diary')}
+                className={`text-sm font-bold pb-2 transition-all relative ${
+                  activeTab === 'diary'
+                    ? 'text-white'
+                    : 'text-brand-muted hover:text-white'
+                }`}
+              >
+                <span>Partidas en Diario</span>
+                {activeTab === 'diary' && (
+                  <motion.div
+                    layoutId="profileActiveTab"
+                    className="absolute bottom-0 inset-x-0 h-0.5 bg-brand-accent rounded-full shadow-[0_0_12px_#00D2FF]"
+                    transition={SPRING_SNAPPY}
+                  />
+                )}
+              </button>
+            </BouncyTap>
 
-            <button
-              onClick={() => setActiveTab('lists')}
-              className={`text-sm font-bold pb-2 transition-all relative ${
-                activeTab === 'lists'
-                  ? 'text-brand-text'
-                  : 'text-brand-muted hover:text-brand-text'
-              }`}
-            >
-              <span>Listas</span>
-              {activeTab === 'lists' && (
-                <motion.div
-                  layoutId="profileActiveTab"
-                  className="absolute bottom-0 inset-x-0 h-0.5 bg-brand-accent rounded-full shadow-[0_0_12px_#00D2FF]"
-                  transition={{ type: 'spring', stiffness: 480, damping: 32 }}
-                />
-              )}
-            </button>
+            <BouncyTap>
+              <button
+                onClick={() => setActiveTab('lists')}
+                className={`text-sm font-bold pb-2 transition-all relative ${
+                  activeTab === 'lists'
+                    ? 'text-white'
+                    : 'text-brand-muted hover:text-white'
+                }`}
+              >
+                <span>Listas</span>
+                {activeTab === 'lists' && (
+                  <motion.div
+                    layoutId="profileActiveTab"
+                    className="absolute bottom-0 inset-x-0 h-0.5 bg-brand-accent rounded-full shadow-[0_0_12px_#00D2FF]"
+                    transition={SPRING_SNAPPY}
+                  />
+                )}
+              </button>
+            </BouncyTap>
           </div>
 
-          {activeTab === 'reviews' ? (
-            profile.recentReviews.length === 0 ? (
-              <div className="py-12 px-4 rounded-2xl bg-brand-surface/20 border border-brand-border/40 text-center flex flex-col items-center justify-center">
-                <div className="w-12 h-12 rounded-2xl bg-brand-surface border border-brand-border flex items-center justify-center mb-3 text-brand-muted">
-                  <MessageSquare className="w-6 h-6" />
-                </div>
-                <h4 className="text-sm font-bold text-brand-text mb-1">Sin reseñas todavía</h4>
-                <p className="text-xs text-brand-muted max-w-sm mb-4">
-                  {isOwner
-                    ? 'Aún no has escrito ninguna reseña. Comparte tu opinión y calificación sobre tus juegos favoritos.'
-                    : 'Este usuario aún no ha publicado reseñas en la comunidad.'}
-                </p>
-                {isOwner && (
-                  <Link
-                    href="/games"
-                    className="px-4 py-2 rounded-xl text-xs font-bold bg-brand-accent text-brand-bg hover:brightness-110 transition-all shadow"
-                  >
-                    Explorar y Reseñar Juegos
-                  </Link>
-                )}
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {profile.recentReviews.map((rev) => (
-                  <div
-                    key={rev.id}
-                    className="p-4 rounded-2xl bg-brand-surface/40 border border-brand-border/60 flex items-start gap-4 hover:border-brand-border transition-all"
-                  >
-                    <Link
-                      href={`/games/${rev.game.slug}`}
-                      className="w-16 aspect-[3/4] rounded-xl overflow-hidden bg-brand-surface border border-brand-border/60 flex-shrink-0"
-                    >
-                      {rev.game.coverUrl && (
-                        <img
-                          src={rev.game.coverUrl}
-                          alt={rev.game.name}
-                          className="w-full h-full object-cover"
-                        />
-                      )}
-                    </Link>
-
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between gap-2 mb-1">
-                        <Link
-                          href={`/games/${rev.game.slug}`}
-                          className="text-sm font-bold text-brand-text hover:text-brand-accent transition-colors truncate"
-                        >
-                          {rev.game.name}
-                        </Link>
-                        <ScoreBadge score={rev.score} size="sm" />
-                      </div>
-
-                      <span className="text-[11px] text-brand-muted block mb-2">
-                        {formatDate(rev.createdAt)}
-                        {rev.playedHours ? ` · ${rev.playedHours}h` : ''}
-                      </span>
-
-                      {rev.title && (
-                        <h4 className="text-xs font-bold text-brand-text mb-1 truncate">
-                          {rev.title}
-                        </h4>
-                      )}
-
-                      {rev.content && (
-                        <p className="text-xs text-brand-muted line-clamp-2">
-                          {rev.content}
-                        </p>
-                      )}
-                    </div>
+          <AnimatePresence mode="popLayout">
+            {activeTab === 'reviews' ? (
+              profile.recentReviews.length === 0 ? (
+                <div className="py-12 px-4 rounded-2xl glass-card-v2 border border-white/[0.08] text-center flex flex-col items-center justify-center">
+                  <div className="w-12 h-12 rounded-2xl bg-brand-surface border border-white/10 flex items-center justify-center mb-3 text-brand-muted">
+                    <MessageSquare className="w-6 h-6" />
                   </div>
-                ))}
-              </div>
-            )
-          ) : activeTab === 'diary' ? (
-            profile.recentPlays.length === 0 ? (
-              <div className="py-12 px-4 rounded-2xl bg-brand-surface/20 border border-brand-border/40 text-center flex flex-col items-center justify-center">
-                <div className="w-12 h-12 rounded-2xl bg-brand-surface border border-brand-border flex items-center justify-center mb-3 text-brand-muted">
-                  <BookOpen className="w-6 h-6" />
+                  <h4 className="text-sm font-bold text-white mb-1">Sin reseñas todavía</h4>
+                  <p className="text-xs text-brand-muted max-w-sm mb-4">
+                    {isOwner
+                      ? 'Aún no has escrito ninguna reseña. Comparte tu opinión y calificación sobre tus juegos favoritos.'
+                      : 'Este usuario aún no ha publicado reseñas en la comunidad.'}
+                  </p>
+                  {isOwner && (
+                    <BouncyTap>
+                      <Link
+                        href="/games"
+                        className="px-4 py-2 rounded-xl text-xs font-bold bg-brand-accent text-brand-bg hover:brightness-110 transition-all shadow"
+                      >
+                        Explorar y Reseñar Juegos
+                      </Link>
+                    </BouncyTap>
+                  )}
                 </div>
-                <h4 className="text-sm font-bold text-brand-text mb-1">Diario de partidas vacío</h4>
-                <p className="text-xs text-brand-muted max-w-sm mb-4">
-                  {isOwner
-                    ? 'Lleva un registro de tus sesiones, horas y estado de juego en tu diario personal.'
-                    : 'No hay partidas registradas recientemente en este diario.'}
-                </p>
-                {isOwner && (
-                  <Link
-                    href="/diary"
-                    className="px-4 py-2 rounded-xl text-xs font-bold bg-brand-accent text-brand-bg hover:brightness-110 transition-all shadow"
-                  >
-                    Ir a Mi Diario
-                  </Link>
-                )}
-              </div>
-            ) : (
-              <div className="space-y-3">
-                {profile.recentPlays.map((p) => {
-                  const statusInfo = PLAY_STATUS_MAP[p.status];
-                  return (
-                    <div
-                      key={p.id}
-                      className="p-3.5 rounded-2xl bg-brand-surface/40 border border-brand-border/60 flex items-center justify-between gap-4 hover:border-brand-border transition-all"
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {profile.recentReviews.map((rev) => (
+                    <motion.div
+                      key={rev.id}
+                      layout
+                      initial={{ opacity: 0, scale: 0.96 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      exit={{ opacity: 0, scale: 0.96 }}
+                      transition={SPRING_GENTLE}
+                      className="p-4 rounded-2xl glass-card-v2 border border-white/[0.08] flex items-start gap-4 hover:border-white/[0.18] transition-all shadow-md group"
                     >
-                      <div className="flex items-center gap-3 min-w-0">
-                        <Link
-                          href={`/games/${p.game.slug}`}
-                          className="w-10 h-14 rounded-lg overflow-hidden bg-brand-surface border border-brand-border flex-shrink-0"
-                        >
-                          {p.game.coverUrl && (
-                            <img
-                              src={p.game.coverUrl}
-                              alt={p.game.name}
-                              className="w-full h-full object-cover"
-                            />
-                          )}
-                        </Link>
+                      <Link
+                        href={`/games/${rev.game.slug}`}
+                        className="w-16 aspect-[3/4] rounded-xl overflow-hidden bg-brand-surface border border-white/10 flex-shrink-0 group-hover:scale-105 transition-transform"
+                      >
+                        {rev.game.coverUrl && (
+                          <img
+                            src={rev.game.coverUrl}
+                            alt={rev.game.name}
+                            className="w-full h-full object-cover"
+                          />
+                        )}
+                      </Link>
 
-                        <div className="min-w-0">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between gap-2 mb-1">
+                          <Link
+                            href={`/games/${rev.game.slug}`}
+                            className="text-sm font-bold text-white hover:text-brand-accent transition-colors truncate"
+                          >
+                            {rev.game.name}
+                          </Link>
+                          <ScoreBadge score={rev.score} size="sm" />
+                        </div>
+
+                        <span className="text-[11px] text-brand-muted block mb-2">
+                          {formatDate(rev.createdAt)}
+                          {rev.playedHours ? ` · ${rev.playedHours}h` : ''}
+                        </span>
+
+                        {rev.title && (
+                          <h4 className="text-xs font-bold text-white mb-1 truncate">
+                            {rev.title}
+                          </h4>
+                        )}
+
+                        {rev.content && (
+                          <p className="text-xs text-brand-muted line-clamp-2">
+                            {rev.content}
+                          </p>
+                        )}
+                      </div>
+                    </motion.div>
+                  ))}
+                </div>
+              )
+            ) : activeTab === 'diary' ? (
+              profile.recentPlays.length === 0 ? (
+                <div className="py-12 px-4 rounded-2xl glass-card-v2 border border-white/[0.08] text-center flex flex-col items-center justify-center">
+                  <div className="w-12 h-12 rounded-2xl bg-brand-surface border border-white/10 flex items-center justify-center mb-3 text-brand-muted">
+                    <BookOpen className="w-6 h-6" />
+                  </div>
+                  <h4 className="text-sm font-bold text-white mb-1">Diario de partidas vacío</h4>
+                  <p className="text-xs text-brand-muted max-w-sm mb-4">
+                    {isOwner
+                      ? 'Lleva un registro de tus sesiones, horas y estado de juego en tu diario personal.'
+                      : 'No hay partidas registradas recientemente en este diario.'}
+                  </p>
+                  {isOwner && (
+                    <BouncyTap>
+                      <Link
+                        href="/diary"
+                        className="px-4 py-2 rounded-xl text-xs font-bold bg-brand-accent text-brand-bg hover:brightness-110 transition-all shadow"
+                      >
+                        Ir a Mi Diario
+                      </Link>
+                    </BouncyTap>
+                  )}
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {profile.recentPlays.map((p) => {
+                    const statusInfo = PLAY_STATUS_MAP[p.status];
+                    return (
+                      <motion.div
+                        key={p.id}
+                        layout
+                        initial={{ opacity: 0, scale: 0.98 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.98 }}
+                        transition={SPRING_GENTLE}
+                        className="p-3.5 rounded-2xl glass-card-v2 border border-white/[0.08] flex items-center justify-between gap-4 hover:border-white/[0.18] transition-all shadow-md group"
+                      >
+                        <div className="flex items-center gap-3 min-w-0">
                           <Link
                             href={`/games/${p.game.slug}`}
-                            className="text-sm font-bold text-brand-text hover:text-brand-accent transition-colors truncate block"
+                            className="w-10 h-14 rounded-lg overflow-hidden bg-brand-surface border border-white/10 flex-shrink-0 group-hover:scale-105 transition-transform"
                           >
-                            {p.game.name}
+                            {p.game.coverUrl && (
+                              <img
+                                src={p.game.coverUrl}
+                                alt={p.game.name}
+                                className="w-full h-full object-cover"
+                              />
+                            )}
                           </Link>
-                          <div className="flex items-center gap-2 text-[11px] text-brand-muted mt-0.5">
-                            <span>{formatDate(p.logDate)}</span>
-                            {p.platform && <span>· {p.platform}</span>}
-                            {p.hoursPlayed ? (
-                              <span className="flex items-center gap-1">
-                                · <Clock className="w-3 h-3 text-brand-muted" /> {p.hoursPlayed}h
-                              </span>
-                            ) : null}
+
+                          <div className="min-w-0">
+                            <Link
+                              href={`/games/${p.game.slug}`}
+                              className="text-sm font-bold text-white hover:text-brand-accent transition-colors truncate block"
+                            >
+                              {p.game.name}
+                            </Link>
+                            <div className="flex items-center gap-2 text-[11px] text-brand-muted mt-0.5">
+                              <span>{formatDate(p.logDate)}</span>
+                              {p.platform && <span>· {p.platform}</span>}
+                              {p.hoursPlayed ? (
+                                <span className="flex items-center gap-1">
+                                  · <Clock className="w-3 h-3 text-brand-muted" /> {p.hoursPlayed}h
+                                </span>
+                              ) : null}
+                            </div>
                           </div>
                         </div>
-                      </div>
 
                       {statusInfo && (
                         <span
@@ -729,7 +797,7 @@ export function ProfileDetailClient({
                           {statusInfo.labelEs}
                         </span>
                       )}
-                    </div>
+                    </motion.div>
                   );
                 })}
               </div>
@@ -740,23 +808,25 @@ export function ProfileDetailClient({
               <span>Cargando listas y colecciones...</span>
             </div>
           ) : userLists.length === 0 ? (
-            <div className="py-12 px-4 rounded-2xl bg-brand-surface/20 border border-brand-border/40 text-center flex flex-col items-center justify-center">
-              <div className="w-12 h-12 rounded-2xl bg-brand-surface border border-brand-border flex items-center justify-center mb-3 text-brand-muted">
+            <div className="py-12 px-4 rounded-2xl glass-card-v2 border border-white/[0.08] text-center flex flex-col items-center justify-center">
+              <div className="w-12 h-12 rounded-2xl bg-brand-surface border border-white/10 flex items-center justify-center mb-3 text-brand-muted">
                 <Layers className="w-6 h-6" />
               </div>
-              <h4 className="text-sm font-bold text-brand-text mb-1">Sin listas creadas</h4>
+              <h4 className="text-sm font-bold text-white mb-1">Sin listas creadas</h4>
               <p className="text-xs text-brand-muted max-w-sm mb-4">
                 {isOwner
                   ? 'Organiza tus juegos por sagas, favoritos anuales o recomendaciones temáticas.'
                   : 'Este usuario aún no tiene listas públicas compartidas.'}
               </p>
               {isOwner && (
-                <Link
-                  href="/lists"
-                  className="px-4 py-2 rounded-xl text-xs font-bold bg-brand-accent text-brand-bg hover:brightness-110 transition-all shadow"
-                >
-                  Crear mi Primera Lista
-                </Link>
+                <BouncyTap>
+                  <Link
+                    href="/lists"
+                    className="px-4 py-2 rounded-xl text-xs font-bold bg-brand-accent text-brand-bg hover:brightness-110 transition-all shadow"
+                  >
+                    Crear mi Primera Lista
+                  </Link>
+                </BouncyTap>
               )}
             </div>
           ) : (
@@ -766,6 +836,7 @@ export function ProfileDetailClient({
               ))}
             </div>
           )}
+          </AnimatePresence>
         </section>
       </div>
 
