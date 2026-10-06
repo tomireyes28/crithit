@@ -19,8 +19,18 @@ import {
   ChevronRight,
   RotateCcw,
   Loader2,
+  Sparkles,
 } from 'lucide-react';
 import { PolarizingShowcase } from '@/components/games/PolarizingShowcase';
+import { motion, AnimatePresence } from 'framer-motion';
+import {
+  SPRING_SNAPPY,
+  SPRING_BOUNCY,
+  SPRING_GENTLE,
+  BouncyTap,
+  Floating,
+  ScrollReveal,
+} from '@/components/ui/MotionWrapper';
 
 interface GenreItem {
   id: string;
@@ -238,76 +248,90 @@ function GamesCatalog() {
 
   return (
     <div className="space-y-8 pb-16">
-      {/* Encabezado y Barra de Búsqueda Principal */}
-      <div className="relative rounded-3xl p-6 sm:p-8 bg-gradient-to-b from-brand-card/90 via-brand-surface/70 to-brand-bg border border-brand-border/60 shadow-xl overflow-hidden">
-        {/* Glow de fondo */}
-        <div className="absolute top-0 right-1/4 w-96 h-96 bg-brand-primary/10 rounded-full blur-3xl pointer-events-none" />
-        <div className="absolute bottom-0 left-1/4 w-96 h-96 bg-brand-secondary/10 rounded-full blur-3xl pointer-events-none" />
+      {/* Encabezado y Barra de Búsqueda Principal con ScrollReveal y Glassmorphism 2.0 */}
+      <ScrollReveal direction="down" distance={20}>
+        <div className="relative rounded-3xl p-6 sm:p-8 glass-card-v2 border border-white/[0.08] shadow-2xl overflow-hidden">
+          {/* Glow ambiental de fondo */}
+          <div className="absolute top-0 right-1/4 w-96 h-96 bg-brand-primary/10 rounded-full blur-3xl pointer-events-none" />
+          <div className="absolute bottom-0 left-1/4 w-96 h-96 bg-brand-secondary/10 rounded-full blur-3xl pointer-events-none" />
 
-        <div className="relative z-10 max-w-4xl mx-auto text-center space-y-6">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-surface border border-brand-border/80 text-xs font-semibold text-brand-secondary shadow-glow-secondary">
-            <Gamepad2 className="w-4 h-4" />
-            <span>Catálogo Completo con Puntuación 0-100</span>
-          </div>
+          <div className="relative z-10 max-w-4xl mx-auto text-center space-y-6">
+            <Floating duration={3.5} distance={5}>
+              <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-brand-surface/80 border border-brand-secondary/30 text-xs font-semibold text-brand-secondary shadow-glow-secondary">
+                <Gamepad2 className="w-4 h-4" />
+                <span>Catálogo Completo con Puntuación 0-100</span>
+              </div>
+            </Floating>
 
-          <h1 className="text-3xl sm:text-5xl font-black tracking-tight text-white">
-            Explora Videojuegos
-          </h1>
+            <h1 className="text-3xl sm:text-5xl font-black tracking-tight text-white">
+              Explora Videojuegos
+            </h1>
 
-          <p className="text-sm sm:text-base text-brand-muted max-w-2xl mx-auto">
-            Descubre títulos aclamados, lanzamientos recientes y joyas ocultas. Si buscas un juego que aún no está en la comunidad, lo traeremos al instante.
-          </p>
+            <p className="text-sm sm:text-base text-brand-muted max-w-2xl mx-auto">
+              Descubre títulos aclamados, lanzamientos recientes y joyas ocultas. Si buscas un juego que aún no está en la comunidad, lo traeremos al instante.
+            </p>
 
-          {/* Barra de Búsqueda Reactiva */}
-          <div className="relative max-w-2xl mx-auto">
-            <div className="relative flex items-center">
-              <Search className="absolute left-4 w-5 h-5 text-brand-muted pointer-events-none" />
-              <input
-                type="text"
-                value={searchInput}
-                onChange={(e) => setSearchInput(e.target.value)}
-                placeholder="Busca por nombre (ej. Elden Ring, Cyberpunk, Zelda, Silksong)..."
-                className="w-full pl-12 pr-12 py-3.5 rounded-2xl bg-brand-bg/80 border border-brand-border/80 text-white placeholder-brand-muted/60 focus:outline-none focus:border-brand-secondary focus:ring-2 focus:ring-brand-secondary/20 shadow-inner transition-all duration-200"
-              />
-              {searchPending ? (
-                <div className="absolute right-4 text-brand-secondary animate-spin">
-                  <Loader2 className="w-5 h-5" />
-                </div>
-              ) : searchInput ? (
-                <button
-                  onClick={() => setSearchInput('')}
-                  className="absolute right-4 p-1 rounded-full text-brand-muted hover:text-white hover:bg-brand-surface transition-colors"
-                  title="Borrar búsqueda"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              ) : null}
+            {/* Barra de Búsqueda Reactiva */}
+            <div className="relative max-w-2xl mx-auto">
+              <div className="relative flex items-center">
+                <Search className="absolute left-4 w-5 h-5 text-brand-muted pointer-events-none" />
+                <input
+                  type="text"
+                  value={searchInput}
+                  onChange={(e) => setSearchInput(e.target.value)}
+                  placeholder="Busca por nombre (ej. Elden Ring, Cyberpunk, Zelda, Silksong)..."
+                  className="w-full pl-12 pr-12 py-3.5 rounded-2xl bg-brand-bg/70 border border-white/[0.08] text-white placeholder-brand-muted/60 focus:outline-none focus:border-brand-secondary focus:ring-2 focus:ring-brand-secondary/20 shadow-inner backdrop-blur-md transition-all duration-200"
+                />
+                {searchPending ? (
+                  <div className="absolute right-4 text-brand-secondary animate-spin">
+                    <Loader2 className="w-5 h-5" />
+                  </div>
+                ) : searchInput ? (
+                  <BouncyTap>
+                    <button
+                      onClick={() => setSearchInput('')}
+                      className="absolute right-3.5 p-1 rounded-full text-brand-muted hover:text-white hover:bg-white/10 transition-colors"
+                      title="Borrar búsqueda"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </BouncyTap>
+                ) : null}
+              </div>
             </div>
           </div>
         </div>
-      </div>
+      </ScrollReveal>
 
-      {/* Barra de Filtros y Ordenamiento */}
+      {/* Barra de Filtros y Ordenamiento con Glassmorphism y Pills con layoutId */}
       <div className="space-y-4">
-        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 border-b border-brand-border/60 pb-4">
-          {/* Pestañas de Ordenamiento */}
-          <div className="flex flex-wrap items-center gap-1.5 p-1 rounded-xl bg-brand-surface/80 border border-brand-border/60 w-fit">
+        <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 border-b border-white/[0.08] pb-4">
+          {/* Pestañas de Ordenamiento con layoutId */}
+          <div className="flex flex-wrap items-center gap-1.5 p-1 rounded-xl bg-brand-surface/60 border border-white/[0.06] backdrop-blur-md w-fit">
             {SORT_OPTIONS.map((opt) => {
               const Icon = opt.icon;
               const isActive = activeSort === opt.value;
               return (
-                <button
-                  key={opt.value}
-                  onClick={() => handleSortChange(opt.value)}
-                  className={`flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold transition-all duration-200 ${
-                    isActive
-                      ? 'bg-brand-primary text-white shadow-glow-primary'
-                      : 'text-brand-muted hover:text-white hover:bg-brand-card'
-                  }`}
-                >
-                  <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-brand-secondary' : ''}`} />
-                  <span>{opt.label}</span>
-                </button>
+                <BouncyTap key={opt.value}>
+                  <button
+                    onClick={() => handleSortChange(opt.value)}
+                    className={`relative flex items-center gap-2 px-3.5 py-2 rounded-lg text-xs font-semibold transition-colors ${
+                      isActive ? 'text-white' : 'text-brand-muted hover:text-white'
+                    }`}
+                  >
+                    {isActive && (
+                      <motion.div
+                        layoutId="catalogSortPill"
+                        transition={SPRING_SNAPPY}
+                        className="absolute inset-0 bg-brand-primary rounded-lg shadow-glow-primary z-0"
+                      />
+                    )}
+                    <span className="relative z-10 flex items-center gap-2">
+                      <Icon className={`w-3.5 h-3.5 ${isActive ? 'text-brand-secondary' : ''}`} />
+                      <span>{opt.label}</span>
+                    </span>
+                  </button>
+                </BouncyTap>
               );
             })}
           </div>
@@ -319,7 +343,7 @@ function GamesCatalog() {
               <select
                 value={activePlatform}
                 onChange={handlePlatformChange}
-                className="px-3 py-2 rounded-xl bg-brand-surface border border-brand-border/80 text-xs font-medium text-white focus:outline-none focus:border-brand-secondary cursor-pointer"
+                className="px-3 py-2 rounded-xl bg-brand-surface/90 border border-white/10 text-xs font-medium text-white focus:outline-none focus:border-brand-secondary cursor-pointer shadow-sm"
               >
                 <option value="">Todas las plataformas</option>
                 {platformsList.map((plat) => (
@@ -331,43 +355,61 @@ function GamesCatalog() {
             </div>
 
             {isFiltered && (
-              <button
-                onClick={handleClearFilters}
-                className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-red-500/10 border border-red-500/30 text-xs font-medium text-red-400 hover:bg-red-500/20 transition-colors"
-              >
-                <RotateCcw className="w-3.5 h-3.5" />
-                <span>Restablecer</span>
-              </button>
+              <BouncyTap>
+                <button
+                  onClick={handleClearFilters}
+                  className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-rose-500/10 border border-rose-500/30 text-xs font-medium text-rose-400 hover:bg-rose-500/20 transition-all shadow-sm"
+                >
+                  <RotateCcw className="w-3.5 h-3.5" />
+                  <span>Restablecer</span>
+                </button>
+              </BouncyTap>
             )}
           </div>
         </div>
 
-        {/* Chips de Géneros */}
+        {/* Chips de Géneros con pastilla deslizante animada */}
         <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-brand-border">
-          <button
-            onClick={() => handleGenreToggle('')}
-            className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all duration-200 ${
-              !activeGenre
-                ? 'bg-white text-brand-bg font-bold shadow-sm'
-                : 'bg-brand-surface border border-brand-border/60 text-brand-muted hover:text-white hover:border-brand-border'
-            }`}
-          >
-            Todos los géneros
-          </button>
+          <BouncyTap>
+            <button
+              onClick={() => handleGenreToggle('')}
+              className={`relative px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-colors ${
+                !activeGenre ? 'text-brand-bg font-bold' : 'text-brand-muted hover:text-white'
+              }`}
+            >
+              {!activeGenre && (
+                <motion.div
+                  layoutId="catalogGenrePill"
+                  transition={SPRING_SNAPPY}
+                  className="absolute inset-0 bg-white rounded-full shadow-md z-0"
+                />
+              )}
+              <span className="relative z-10">Todos los géneros</span>
+            </button>
+          </BouncyTap>
+
           {genresList.map((genre) => {
             const isSelected = activeGenre === genre.slug;
             return (
-              <button
-                key={genre.id}
-                onClick={() => handleGenreToggle(genre.slug)}
-                className={`px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all duration-200 ${
-                  isSelected
-                    ? 'bg-brand-secondary text-brand-bg font-bold shadow-glow-secondary'
-                    : 'bg-brand-surface border border-brand-border/60 text-brand-muted hover:text-white hover:border-brand-border'
-                }`}
-              >
-                {genre.name}
-              </button>
+              <BouncyTap key={genre.id}>
+                <button
+                  onClick={() => handleGenreToggle(genre.slug)}
+                  className={`relative px-3.5 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-colors ${
+                    isSelected
+                      ? 'text-brand-bg font-bold'
+                      : 'text-brand-muted hover:text-white bg-brand-surface/60 border border-white/[0.06]'
+                  }`}
+                >
+                  {isSelected && (
+                    <motion.div
+                      layoutId="catalogGenrePill"
+                      transition={SPRING_SNAPPY}
+                      className="absolute inset-0 bg-brand-secondary rounded-full shadow-glow-secondary z-0"
+                    />
+                  )}
+                  <span className="relative z-10">{genre.name}</span>
+                </button>
+              </BouncyTap>
             );
           })}
         </div>
@@ -377,7 +419,10 @@ function GamesCatalog() {
       <div className="flex items-center justify-between text-xs text-brand-muted">
         <span>
           {loading ? (
-            'Buscando títulos...'
+            <span className="inline-flex items-center gap-1.5">
+              <Loader2 className="w-3.5 h-3.5 animate-spin text-brand-secondary" />
+              <span>Buscando títulos...</span>
+            </span>
           ) : (
             <>
               Mostrando <strong className="text-white">{games.length}</strong> de{' '}
@@ -393,7 +438,7 @@ function GamesCatalog() {
         )}
       </div>
 
-      {/* Grilla de Videojuegos o Skeletons */}
+      {/* Grilla de Videojuegos con AnimatePresence mode="popLayout" */}
       {loading ? (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-6">
           {Array.from({ length: 12 }).map((_, idx) => (
@@ -402,15 +447,26 @@ function GamesCatalog() {
         </div>
       ) : games.length > 0 ? (
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-6">
-          {games.map((game) => (
-            <GameCard key={game.id} game={game} />
-          ))}
+          <AnimatePresence mode="popLayout">
+            {games.map((game, idx) => (
+              <motion.div
+                key={game.id}
+                layout
+                initial={{ opacity: 0, scale: 0.92, y: 14 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.92, transition: { duration: 0.15 } }}
+                transition={{ ...SPRING_GENTLE, delay: Math.min(idx * 0.02, 0.25) }}
+              >
+                <GameCard game={game} />
+              </motion.div>
+            ))}
+          </AnimatePresence>
         </div>
       ) : (
-        /* Estado Vacío */
-        <div className="rounded-3xl border border-dashed border-brand-border/80 bg-brand-surface/30 p-12 text-center space-y-4 max-w-lg mx-auto">
-          <div className="w-16 h-16 rounded-2xl bg-brand-card flex items-center justify-center mx-auto text-brand-muted border border-brand-border/60">
-            <Gamepad2 className="w-8 h-8 text-brand-muted/60" />
+        /* Estado Vacío Estilizado */
+        <div className="rounded-3xl glass-card-v2 border border-white/[0.08] p-12 text-center space-y-4 max-w-lg mx-auto shadow-xl">
+          <div className="w-16 h-16 rounded-2xl bg-brand-surface border border-white/10 flex items-center justify-center mx-auto text-brand-muted">
+            <Gamepad2 className="w-8 h-8 text-brand-secondary" />
           </div>
           <h3 className="text-xl font-bold text-white">No encontramos ningún juego</h3>
           <p className="text-sm text-brand-muted">
@@ -418,42 +474,48 @@ function GamesCatalog() {
               ? `No se hallaron coincidencias para "${activeSearch}". Intenta con otro término o revisa la ortografía.`
               : 'No hay títulos disponibles con la combinación de filtros seleccionada.'}
           </p>
-          <button
-            onClick={handleClearFilters}
-            className="px-5 py-2.5 rounded-xl bg-brand-primary text-white font-semibold text-xs hover:bg-brand-primary-hover shadow-glow-primary transition-all inline-flex items-center gap-2"
-          >
-            <RotateCcw className="w-4 h-4" />
-            Restablecer todos los filtros
-          </button>
+          <BouncyTap>
+            <button
+              onClick={handleClearFilters}
+              className="px-5 py-2.5 rounded-xl bg-brand-primary text-white font-semibold text-xs hover:bg-brand-primary-hover shadow-glow-primary transition-all inline-flex items-center gap-2"
+            >
+              <RotateCcw className="w-4 h-4" />
+              Restablecer todos los filtros
+            </button>
+          </BouncyTap>
         </div>
       )}
 
-      {/* Paginación */}
+      {/* Paginación con Micro-Rebotes */}
       {!loading && meta.totalPages > 1 && (
         <div className="flex items-center justify-center gap-2 pt-6">
-          <button
-            onClick={() => handlePageChange(currentPage - 1)}
-            disabled={currentPage <= 1}
-            className="flex items-center gap-1 px-4 py-2 rounded-xl bg-brand-surface border border-brand-border/60 text-xs font-semibold text-brand-muted hover:text-white hover:border-brand-secondary/40 disabled:opacity-30 disabled:pointer-events-none transition-all"
-          >
-            <ChevronLeft className="w-4 h-4" />
-            <span>Anterior</span>
-          </button>
+          <BouncyTap>
+            <button
+              onClick={() => handlePageChange(currentPage - 1)}
+              disabled={currentPage <= 1}
+              className="flex items-center gap-1 px-4 py-2 rounded-xl glass-card-v2 border border-white/10 text-xs font-semibold text-brand-muted hover:text-white hover:border-brand-secondary/40 disabled:opacity-30 disabled:pointer-events-none transition-all shadow-sm"
+            >
+              <ChevronLeft className="w-4 h-4" />
+              <span>Anterior</span>
+            </button>
+          </BouncyTap>
 
-          <div className="flex items-center gap-1 px-3 py-2 rounded-xl bg-brand-card border border-brand-border/60 text-xs font-mono text-zinc-300">
+          <div className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-brand-surface/80 border border-white/10 text-xs font-mono text-zinc-300 shadow-inner">
             <span className="text-brand-secondary font-bold">{currentPage}</span>
             <span className="text-brand-muted">/</span>
             <span>{meta.totalPages}</span>
           </div>
 
-          <button
-            onClick={() => handlePageChange(currentPage + 1)}
-            disabled={currentPage >= meta.totalPages}
-            className="flex items-center gap-1 px-4 py-2 rounded-xl bg-brand-surface border border-brand-border/60 text-xs font-semibold text-brand-muted hover:text-white hover:border-brand-secondary/40 disabled:opacity-30 disabled:pointer-events-none transition-all"
-          >
-            <span>Siguiente</span>
-            <ChevronRight className="w-4 h-4" />
-          </button>
+          <BouncyTap>
+            <button
+              onClick={() => handlePageChange(currentPage + 1)}
+              disabled={currentPage >= meta.totalPages}
+              className="flex items-center gap-1 px-4 py-2 rounded-xl glass-card-v2 border border-white/10 text-xs font-semibold text-brand-muted hover:text-white hover:border-brand-secondary/40 disabled:opacity-30 disabled:pointer-events-none transition-all shadow-sm"
+            >
+              <span>Siguiente</span>
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          </BouncyTap>
         </div>
       )}
 

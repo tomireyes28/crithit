@@ -15,6 +15,7 @@ import {
   Gamepad2,
   Loader2,
 } from 'lucide-react';
+import { BouncyTap, SPRING_SNAPPY, SPRING_GENTLE } from '@/components/ui/MotionWrapper';
 
 export interface PolarizingGameItem {
   id: string;
@@ -70,13 +71,13 @@ export const PolarizingShowcase: React.FC = () => {
   ] as const;
 
   return (
-    <section className="relative rounded-3xl p-6 sm:p-8 bg-gradient-to-b from-brand-surface/70 to-brand-card/80 border border-brand-border/80 backdrop-blur-xl overflow-hidden space-y-6">
+    <section className="relative rounded-3xl p-6 sm:p-8 glass-card-v2 border border-white/[0.08] shadow-2xl overflow-hidden space-y-6">
       {/* Resplandor ambiental de fondo */}
       <div className="absolute top-0 right-1/4 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute bottom-0 left-1/4 w-96 h-96 bg-rose-500/10 rounded-full blur-3xl pointer-events-none" />
 
       {/* Cabecera de la Sección */}
-      <div className="relative z-10 flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-brand-border/40 pb-5">
+      <div className="relative z-10 flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-white/[0.08] pb-5">
         <div className="space-y-2">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-semibold bg-amber-500/10 border border-amber-500/30 text-amber-400">
             <Flame className="w-3.5 h-3.5" />
@@ -94,32 +95,33 @@ export const PolarizingShowcase: React.FC = () => {
         </div>
 
         {/* Píldoras de filtrado */}
-        <div className="flex flex-wrap items-center gap-1.5 p-1 rounded-xl bg-brand-surface/80 border border-brand-border/60 self-start md:self-auto">
+        <div className="flex flex-wrap items-center gap-1.5 p-1 rounded-xl bg-brand-surface/60 border border-white/[0.06] backdrop-blur-md self-start md:self-auto">
           {categoryTabs.map((tab) => {
             const Icon = tab.icon;
             const active = category === tab.id;
             return (
-              <button
-                key={tab.id}
-                onClick={() => setCategory(tab.id)}
-                className={`relative px-3 py-1.5 rounded-lg text-xs font-bold transition-all flex items-center gap-1.5 ${
-                  active
-                    ? 'text-white shadow-sm'
-                    : 'text-brand-muted hover:text-white hover:bg-brand-bg/50'
-                }`}
-              >
-                {active && (
-                  <motion.div
-                    layoutId="polarizingTabIndicator"
-                    className="absolute inset-0 bg-brand-surface border border-brand-border rounded-lg shadow-inner z-0"
-                    transition={{ type: 'spring', stiffness: 350, damping: 28 }}
-                  />
-                )}
-                <span className="relative z-10 flex items-center gap-1.5">
-                  <Icon className="w-3.5 h-3.5" />
-                  <span>{tab.label}</span>
-                </span>
-              </button>
+              <BouncyTap key={tab.id}>
+                <button
+                  onClick={() => setCategory(tab.id)}
+                  className={`relative px-3.5 py-1.5 rounded-lg text-xs font-bold transition-colors flex items-center gap-1.5 ${
+                    active
+                      ? 'text-white'
+                      : 'text-brand-muted hover:text-white'
+                  }`}
+                >
+                  {active && (
+                    <motion.div
+                      layoutId="polarizingTabIndicator"
+                      className="absolute inset-0 bg-brand-surface border border-white/10 rounded-lg shadow-sm z-0"
+                      transition={SPRING_SNAPPY}
+                    />
+                  )}
+                  <span className="relative z-10 flex items-center gap-1.5">
+                    <Icon className="w-3.5 h-3.5" />
+                    <span>{tab.label}</span>
+                  </span>
+                </button>
+              </BouncyTap>
             );
           })}
         </div>
@@ -145,8 +147,8 @@ export const PolarizingShowcase: React.FC = () => {
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.95 }}
-                transition={{ duration: 0.25 }}
-                className="group flex flex-col rounded-2xl bg-brand-bg/70 border border-brand-border/60 hover:border-brand-border transition-all overflow-hidden p-4 space-y-3.5 hover:shadow-xl hover:shadow-black/40"
+                transition={SPRING_GENTLE}
+                className="group flex flex-col rounded-2xl glass-card-v2 border border-white/[0.08] hover:border-white/[0.18] transition-all overflow-hidden p-4 space-y-3.5 hover:shadow-xl hover:shadow-black/40 shadow-lg"
               >
                 {/* Mini Hero Header de la tarjeta */}
                 <div className="flex gap-3.5 items-start">
