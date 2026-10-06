@@ -17,6 +17,7 @@ import {
   BouncyTap,
   ShimmerButton,
   LiquidButton,
+  Floating,
 } from '@/components/ui/MotionWrapper';
 import {
   Sparkles,
@@ -58,10 +59,12 @@ export default function HomePage() {
 
       {/* Hero Section */}
       <FadeIn className="text-center max-w-4xl mx-auto space-y-8 pt-4">
-        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-brand-surface/80 border border-brand-border/80 text-xs font-semibold text-brand-secondary shadow-glow-secondary backdrop-blur-md">
-          <Sparkles className="w-3.5 h-3.5" />
-          <span>El nuevo estándar para la crítica y registro de videojuegos</span>
-        </div>
+        <Floating duration={4} distance={6}>
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-brand-surface/85 border border-brand-secondary/35 text-xs font-semibold text-brand-secondary shadow-[0_0_20px_rgba(0,210,255,0.22)] backdrop-blur-md">
+            <Sparkles className="w-3.5 h-3.5 text-brand-secondary animate-pulse" />
+            <span>El nuevo estándar para la crítica y registro de videojuegos</span>
+          </div>
+        </Floating>
 
         <h1 className="text-4xl sm:text-6xl lg:text-7xl font-black tracking-tight text-white leading-tight">
           Lleva tu diario gamer.
@@ -134,10 +137,13 @@ export default function HomePage() {
             </Link>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <ScrollStaggerContainer className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {recentReviews.map((rev) => (
-              <HoverLift key={rev.id}>
-                <div className="glass-panel p-5 rounded-2xl border border-brand-border/60 hover:border-brand-border transition-all flex flex-col justify-between h-full space-y-4">
+              <StaggerItem key={rev.id}>
+                <SpotlightCard
+                  spotlightColor="rgba(0, 210, 255, 0.08)"
+                  className="glass-card-v2 p-5 rounded-2xl border border-white/[0.08] hover:border-brand-secondary/40 transition-all flex flex-col justify-between h-full space-y-4 shadow-lg"
+                >
                   <div className="space-y-3">
                     <div className="flex items-center justify-between gap-2">
                       <Link
@@ -161,7 +167,7 @@ export default function HomePage() {
                     {rev.game && (
                       <Link
                         href={`/games/${rev.game.slug}`}
-                        className="flex items-center gap-2.5 p-2 rounded-xl bg-brand-bg/60 border border-brand-border/40 hover:border-brand-secondary/40 transition-colors"
+                        className="flex items-center gap-2.5 p-2 rounded-xl bg-brand-surface/60 border border-brand-border/40 hover:border-brand-secondary/40 transition-colors"
                       >
                         {rev.game.coverUrl ? (
                           <img src={rev.game.coverUrl} alt="" className="w-7 h-9 rounded object-cover flex-shrink-0" />
@@ -203,10 +209,10 @@ export default function HomePage() {
                       </span>
                     )}
                   </div>
-                </div>
-              </HoverLift>
+                </SpotlightCard>
+              </StaggerItem>
             ))}
-          </div>
+          </ScrollStaggerContainer>
         </ScrollReveal>
       )}
 

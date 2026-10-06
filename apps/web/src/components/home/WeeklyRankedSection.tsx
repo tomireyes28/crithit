@@ -357,7 +357,7 @@ function PodiumCard({
           rotateY,
           transformStyle: 'preserve-3d',
         }}
-        className={`relative h-full flex flex-col rounded-3xl overflow-hidden glass-card border ${metalConfig.border} ${metalConfig.glow} transition-colors duration-300`}
+        className={`relative h-full flex flex-col rounded-3xl overflow-hidden glass-card-v2 border ${metalConfig.border} ${metalConfig.glow} transition-colors duration-300`}
       >
         {/* Poster Container */}
         <div className="relative aspect-[16/10] sm:aspect-[16/11] w-full overflow-hidden bg-brand-surface">
@@ -473,7 +473,7 @@ function CompactRankRow({ game }: { game: RankedGame }) {
     <HoverLift>
       <Link
         href={`/games/${game.slug}`}
-        className="glass-panel p-3.5 rounded-2xl border border-brand-border/60 hover:border-brand-secondary/40 flex items-center justify-between gap-3 group transition-all"
+        className="glass-card-v2 p-3.5 rounded-2xl border border-white/[0.08] hover:border-brand-secondary/50 flex items-center justify-between gap-3 group transition-all"
       >
         <div className="flex items-center gap-3 min-w-0">
           {/* Rank Number */}
