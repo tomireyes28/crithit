@@ -20,7 +20,7 @@ import {
 import { useAuth } from '@/lib/auth-context';
 import { NotificationDropdown } from '@/components/notifications/NotificationDropdown';
 import { CommandPaletteModal } from '@/components/navigation/CommandPaletteModal';
-import { MagneticHover, BouncyTap } from '@/components/ui/MotionWrapper';
+import { MagneticHover, BouncyTap, ShimmerButton } from '@/components/ui/MotionWrapper';
 
 export const Navbar = () => {
   const router = useRouter();
@@ -241,15 +241,14 @@ export const Navbar = () => {
                 >
                   Iniciar Sesión
                 </Link>
-                <BouncyTap scaleOnHover={1.04} scaleOnTap={0.96}>
-                  <Link
-                    href="/register"
-                    className="px-4 py-2 text-sm font-semibold text-white bg-brand-primary hover:bg-brand-primary-hover rounded-xl shadow-glow-primary transition-all duration-200 flex items-center gap-1.5"
-                  >
-                    <Sparkles className="w-4 h-4" />
-                    Crear Cuenta
-                  </Link>
-                </BouncyTap>
+                <ShimmerButton
+                  href="/register"
+                  variant="primary"
+                  size="sm"
+                  icon={<Sparkles className="w-3.5 h-3.5 text-cyan-200" />}
+                >
+                  Crear Cuenta
+                </ShimmerButton>
               </div>
             )}
           </div>

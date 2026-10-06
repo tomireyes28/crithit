@@ -15,6 +15,8 @@ import {
   ScrollStaggerContainer,
   SpotlightCard,
   BouncyTap,
+  ShimmerButton,
+  LiquidButton,
 } from '@/components/ui/MotionWrapper';
 import {
   Sparkles,
@@ -74,24 +76,22 @@ export default function HomePage() {
         </p>
 
         <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2">
-          <BouncyTap>
-            <Link
-              href="/games"
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-xl font-bold text-white bg-brand-primary hover:bg-brand-primary-hover shadow-glow-primary transition-all text-sm sm:text-base"
-            >
-              <Compass className="w-5 h-5" />
-              Explorar Catálogo
-            </Link>
-          </BouncyTap>
-          <BouncyTap>
-            <Link
-              href="/critics"
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-xl font-bold text-brand-text bg-brand-surface/80 hover:bg-brand-surface border border-brand-border/80 hover:border-brand-secondary/40 transition-all text-sm sm:text-base backdrop-blur-md"
-            >
-              <Award className="w-5 h-5 text-brand-secondary" />
-              Acreditación de Críticos
-            </Link>
-          </BouncyTap>
+          <ShimmerButton
+            href="/games"
+            variant="primary"
+            size="lg"
+            icon={<Compass className="w-5 h-5" />}
+          >
+            Explorar Catálogo
+          </ShimmerButton>
+          <LiquidButton
+            href="/critics"
+            variant="secondary"
+            size="lg"
+            icon={<Award className="w-5 h-5 text-brand-secondary" />}
+          >
+            Acreditación de Críticos
+          </LiquidButton>
         </div>
       </FadeIn>
 
@@ -273,15 +273,14 @@ export default function HomePage() {
           Crea tu perfil en segundos, pinnea tus 4 juegos favoritos en tu vitrina y comienza a calificar con precisión.
         </p>
         <div className="pt-2 relative z-10 flex justify-center">
-          <BouncyTap scaleOnHover={1.04} scaleOnTap={0.96}>
-            <Link
-              href="/register"
-              className="inline-flex items-center gap-2 px-8 py-4 rounded-xl font-bold text-white bg-brand-primary hover:bg-brand-primary-hover shadow-glow-primary transition-all text-base"
-            >
-              <Users className="w-5 h-5" />
-              Crear mi Perfil en CritHit
-            </Link>
-          </BouncyTap>
+          <ShimmerButton
+            href="/register"
+            variant="primary"
+            size="lg"
+            icon={<Users className="w-5 h-5" />}
+          >
+            Crear mi Perfil en CritHit
+          </ShimmerButton>
         </div>
       </ScrollReveal>
     </div>

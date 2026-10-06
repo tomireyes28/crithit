@@ -381,4 +381,5 @@ export const TiltCard: React.FC<
   );
 };
 
+export * from './MotionButtons';
 export { AnimatePresence, motion };
