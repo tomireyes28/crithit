@@ -6,6 +6,11 @@ import { motion, AnimatePresence, Variants } from 'framer-motion';
 // Curva de inercia natural (Apple / Linear style)
 export const INERTIA_EASING = [0.16, 1, 0.3, 1];
 
+// Constantes de resortes físicos universales
+export const SPRING_GENTLE = { type: 'spring', damping: 20, stiffness: 120 } as const;
+export const SPRING_BOUNCY = { type: 'spring', damping: 15, stiffness: 260 } as const;
+export const SPRING_SNAPPY = { type: 'spring', damping: 25, stiffness: 400 } as const;
+
 interface MotionProps {
   children: React.ReactNode;
   className?: string;
@@ -139,6 +144,18 @@ export const ScaleFade: React.FC<MotionProps> = ({ children, className = '', del
     initial={{ opacity: 0, scale: 0.92 }}
     animate={{ opacity: 1, scale: 1 }}
     transition={{ duration: 0.35, delay, ease: 'easeOut' }}
+    className={className}
+  >
+    {children}
+  </motion.div>
+);
+
+export const Floating: React.FC<
+  MotionProps & { duration?: number; distance?: number }
+> = ({ children, className = '', duration = 4, distance = 6 }) => (
+  <motion.div
+    animate={{ y: [-distance / 2, distance / 2, -distance / 2] }}
+    transition={{ duration, repeat: Infinity, ease: 'easeInOut' }}
     className={className}
   >
     {children}

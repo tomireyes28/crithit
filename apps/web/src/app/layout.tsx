@@ -112,12 +112,28 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
       </head>
-      <body className="bg-brand-bg text-brand-text min-h-screen flex flex-col antialiased selection:bg-brand-primary selection:text-white">
+      <body className="bg-brand-bg text-brand-text min-h-screen flex flex-col antialiased selection:bg-brand-primary selection:text-white relative">
+        {/* Ambient Aurora Mesh Background Layer (Fixed & GPU-accelerated) */}
+        <div className="fixed inset-0 pointer-events-none -z-50 overflow-hidden" aria-hidden="true">
+          {/* Orbe 1: Violeta profundo / Brand Primary (Superior izquierdo) */}
+          <div className="absolute -top-[15%] -left-[10%] w-[680px] h-[680px] rounded-full bg-gradient-to-br from-brand-primary/18 to-violet-900/10 blur-[130px] animate-mesh-float-1 will-change-transform" />
+
+          {/* Orbe 2: Cian eléctrico / Brand Secondary (Centro-derecho) */}
+          <div className="absolute top-[30%] -right-[12%] w-[620px] h-[620px] rounded-full bg-gradient-to-bl from-brand-secondary/14 to-cyan-800/8 blur-[140px] animate-mesh-float-2 will-change-transform" />
+
+          {/* Orbe 3: Magenta cálido / Brand Tertiary (Inferior izquierdo) */}
+          <div className="absolute -bottom-[10%] left-[15%] w-[540px] h-[540px] rounded-full bg-gradient-to-tr from-brand-tertiary/10 to-rose-900/6 blur-[130px] animate-mesh-float-3 will-change-transform" />
+
+          {/* Grilla técnica sutil y viñeta suave */}
+          <div className="absolute inset-0 bg-grid-pattern opacity-50" />
+          <div className="absolute inset-0 bg-vignette opacity-80" />
+        </div>
+
         <AuthProvider>
           <RealtimeNotificationsProvider>
             <PwaRegister />
             <Navbar />
-            <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 relative z-10">
               {children}
             </main>
             <Footer />

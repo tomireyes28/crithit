@@ -63,6 +63,26 @@ const config: Config = {
           '60%': { transform: 'scale(0.92)' },
           '80%': { transform: 'scale(1.06)' },
         },
+        meshFloat1: {
+          '0%, 100%': { transform: 'translate(0px, 0px) scale(1)' },
+          '50%': { transform: 'translate(50px, -40px) scale(1.12)' },
+        },
+        meshFloat2: {
+          '0%, 100%': { transform: 'translate(0px, 0px) scale(1)' },
+          '50%': { transform: 'translate(-40px, 35px) scale(0.92)' },
+        },
+        meshFloat3: {
+          '0%, 100%': { transform: 'translate(0px, 0px) scale(1)' },
+          '50%': { transform: 'translate(35px, 45px) scale(1.08)' },
+        },
+        floatGentle: {
+          '0%, 100%': { transform: 'translateY(0px)' },
+          '50%': { transform: 'translateY(-6px)' },
+        },
+        pulseGlow: {
+          '0%, 100%': { opacity: '0.6', transform: 'scale(1)' },
+          '50%': { opacity: '1', transform: 'scale(1.04)' },
+        },
       },
       animation: {
         'fade-in': 'fadeIn 0.25s ease-out forwards',
@@ -70,6 +90,11 @@ const config: Config = {
         'modal-pop': 'modalPop 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards',
         shimmer: 'shimmer 2s infinite',
         'pop-bounce': 'popBounce 0.45s ease-in-out',
+        'mesh-float-1': 'meshFloat1 18s ease-in-out infinite',
+        'mesh-float-2': 'meshFloat2 24s ease-in-out infinite',
+        'mesh-float-3': 'meshFloat3 20s ease-in-out infinite',
+        'float-gentle': 'floatGentle 4s ease-in-out infinite',
+        'pulse-glow': 'pulseGlow 3s ease-in-out infinite',
       },
     },
   },

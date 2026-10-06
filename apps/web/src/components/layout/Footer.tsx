@@ -4,7 +4,7 @@ import { Gamepad2, Heart } from 'lucide-react';
 
 export const Footer = () => {
   return (
-    <footer className="bg-brand-card/70 border-t border-brand-border/60 text-brand-muted text-sm mt-20">
+    <footer className="bg-[#0A0E1A]/85 backdrop-blur-xl border-t border-white/[0.08] text-brand-muted text-sm mt-24 relative z-10">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Brand Info */}
