@@ -3,9 +3,16 @@
 import React, { useState, useRef } from 'react';
 import Link from 'next/link';
 import { ScoreBadge } from '@/components/ui/ScoreBadge';
-import { Gamepad2, Calendar } from 'lucide-react';
-import { GameSummary } from '@crithit/shared';
-import { motion, useMotionValue, useSpring, useTransform } from 'framer-motion';
+import { Gamepad2, Calendar, Sparkles, ChevronRight } from 'lucide-react';
+import { GameSummary, getScoreColorInfo } from '@crithit/shared';
+import {
+  motion,
+  useMotionValue,
+  useSpring,
+  useTransform,
+  useMotionTemplate,
+  useReducedMotion,
+} from 'framer-motion';
 
 interface GameCardProps {
   game: GameSummary;
@@ -15,43 +22,41 @@ interface GameCardProps {
 export const GameCard: React.FC<GameCardProps> = ({ game }) => {
   const [imgError, setImgError] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
-
   const cardRef = useRef<HTMLDivElement>(null);
+  const shouldReduceMotion = useReducedMotion();
 
-  // Mouse position values (-0.5 to 0.5)
+  // Mouse position coordinates (-0.5 to 0.5)
   const x = useMotionValue(0);
   const y = useMotionValue(0);
 
-  // Spring physics for smooth tilt inertia
-  const mouseXSpring = useSpring(x, { stiffness: 300, damping: 25 });
-  const mouseYSpring = useSpring(y, { stiffness: 300, damping: 25 });
+  // Smooth physical springs for natural tilt inertia
+  const mouseXSpring = useSpring(x, { stiffness: 280, damping: 22 });
+  const mouseYSpring = useSpring(y, { stiffness: 280, damping: 22 });
 
-  // Transforms
-  const rotateX = useTransform(mouseYSpring, [-0.5, 0.5], ['7.5deg', '-7.5deg']);
-  const rotateY = useTransform(mouseXSpring, [-0.5, 0.5], ['-7.5deg', '7.5deg']);
+  // 3D rotation transforms (calibrated max 6° for comfortable viewing)
+  const rotateX = useTransform(mouseYSpring, [-0.5, 0.5], ['6deg', '-6deg']);
+  const rotateY = useTransform(mouseXSpring, [-0.5, 0.5], ['-6deg', '6deg']);
 
-  // Glare position
-  const glareX = useTransform(mouseXSpring, [-0.5, 0.5], ['0%', '100%']);
-  const glareY = useTransform(mouseYSpring, [-0.5, 0.5], ['0%', '100%']);
+  // Real-time dynamic specular glare coordinates
+  const glareX = useTransform(mouseXSpring, [-0.5, 0.5], ['15%', '85%']);
+  const glareY = useTransform(mouseYSpring, [-0.5, 0.5], ['15%', '85%']);
+
+  const glareBackground = useMotionTemplate`radial-gradient(circle 220px at ${glareX} ${glareY}, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0.08) 45%, transparent 80%)`;
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!cardRef.current) return;
+    if (shouldReduceMotion || !cardRef.current) return;
     const rect = cardRef.current.getBoundingClientRect();
-    const width = rect.width;
-    const height = rect.height;
     const mouseX = e.clientX - rect.left;
     const mouseY = e.clientY - rect.top;
 
-    const xPct = mouseX / width - 0.5;
-    const yPct = mouseY / height - 0.5;
+    const xPct = mouseX / rect.width - 0.5;
+    const yPct = mouseY / rect.height - 0.5;
 
     x.set(xPct);
     y.set(yPct);
   };
 
-  const handleMouseEnter = () => {
-    setIsHovered(true);
-  };
+  const handleMouseEnter = () => setIsHovered(true);
 
   const handleMouseLeave = () => {
     setIsHovered(false);
@@ -71,7 +76,13 @@ export const GameCard: React.FC<GameCardProps> = ({ game }) => {
         ? game.criticScore
         : game.metacriticScore;
 
-  const isMasterpiece = displayScore !== null && displayScore !== undefined && displayScore >= 90;
+  const scoreInfo =
+    displayScore !== null && displayScore !== undefined
+      ? getScoreColorInfo(displayScore)
+      : null;
+
+  const scoreColor = scoreInfo?.colorHex || '#6C5CE7';
+  const isMasterpiece = displayScore !== null && displayScore !== undefined && displayScore >= 95;
   const coverSrc = !imgError && game.coverUrl ? game.coverUrl : null;
 
   return (
@@ -84,8 +95,8 @@ export const GameCard: React.FC<GameCardProps> = ({ game }) => {
     >
       <motion.div
         style={{
-          rotateX,
-          rotateY,
+          rotateX: shouldReduceMotion ? 0 : rotateX,
+          rotateY: shouldReduceMotion ? 0 : rotateY,
           transformStyle: 'preserve-3d',
         }}
         whileTap={{ scale: 0.98 }}
@@ -93,20 +104,34 @@ export const GameCard: React.FC<GameCardProps> = ({ game }) => {
       >
         <Link
           href={`/games/${game.slug}`}
-          className={`group relative flex flex-col h-full rounded-2xl bg-brand-card/85 border border-brand-border/60 overflow-hidden transition-all duration-300 ${
-            isMasterpiece
-              ? 'hover:border-cyan-400/80 hover:shadow-[0_12px_35px_rgba(0,210,255,0.25)]'
-              : 'hover:border-brand-primary/80 hover:shadow-[0_12px_35px_rgba(108,92,231,0.22)]'
-          }`}
+          className="group relative flex flex-col h-full rounded-2xl glass-card-v2 border overflow-hidden transition-all duration-300"
+          style={{
+            borderColor: isHovered ? `${scoreColor}99` : 'rgba(255, 255, 255, 0.08)',
+            boxShadow: isHovered
+              ? `0 16px 40px -10px ${scoreColor}45, 0 0 20px -2px ${scoreColor}25`
+              : '0 4px 20px rgba(0, 0, 0, 0.3)',
+          }}
         >
-          {/* Dynamic Light Glare Reflection */}
+          {/* Dynamic Light Glare Specular Reflection */}
           <motion.div
             className="absolute inset-0 pointer-events-none z-30 transition-opacity duration-300"
             style={{
-              opacity: isHovered ? 0.25 : 0,
-              background: `radial-gradient(circle 180px at ${glareX.get()} ${glareY.get()}, rgba(255,255,255,0.6) 0%, transparent 80%)`,
+              opacity: isHovered ? 0.3 : 0,
+              background: glareBackground,
             }}
           />
+
+          {/* Holographic Prismatic Foil Reflection for Masterpiece titles */}
+          {isMasterpiece && (
+            <div
+              className="absolute inset-0 pointer-events-none z-20 mix-blend-color-dodge transition-opacity duration-500"
+              style={{
+                opacity: isHovered ? 0.35 : 0,
+                background:
+                  'linear-gradient(115deg, transparent 20%, rgba(0,210,255,0.3) 40%, rgba(168,85,247,0.3) 60%, rgba(245,158,11,0.2) 80%, transparent 95%)',
+              }}
+            />
+          )}
 
           {/* Contenedor de Carátula con Proporción Póster */}
           <div className="relative aspect-[3/4] w-full overflow-hidden bg-brand-surface">
@@ -128,28 +153,39 @@ export const GameCard: React.FC<GameCardProps> = ({ game }) => {
               </div>
             )}
 
-            {/* Gradiente de sombra inferior para legibilidad */}
-            <div className="absolute inset-0 bg-gradient-to-t from-brand-card via-transparent to-black/30 pointer-events-none opacity-80" />
+            {/* Gradiente de sombra inferior para legibilidad cinematográfica */}
+            <div className="absolute inset-0 bg-gradient-to-t from-brand-card via-black/20 to-black/35 pointer-events-none opacity-80" />
 
             {/* Badge de Puntuación (0-100) Flotante */}
             <div className="absolute top-2.5 right-2.5 drop-shadow-md z-10">
               <ScoreBadge score={displayScore} size="sm" animate={true} />
             </div>
 
-            {/* Año en la esquina superior izquierda */}
+            {/* Año de Lanzamiento */}
             {releaseYear && (
-              <div className="absolute top-2.5 left-2.5 z-10 flex items-center gap-1 px-2 py-0.5 rounded-md bg-black/60 backdrop-blur-md border border-white/10 text-[11px] font-mono text-zinc-300">
+              <div className="absolute top-2.5 left-2.5 z-10 flex items-center gap-1 px-2 py-0.5 rounded-md bg-black/65 backdrop-blur-md border border-white/10 text-[11px] font-mono text-zinc-300">
                 <Calendar className="w-3 h-3 text-brand-muted" />
                 <span>{releaseYear}</span>
               </div>
             )}
+
+            {/* Quick Action Pill en Hover (Desliza suavemente desde abajo) */}
+            <div className="absolute bottom-2.5 left-2.5 right-2.5 z-20 flex items-center justify-between opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-2 group-hover:translate-y-0 pointer-events-none">
+              <span className="text-[10px] font-bold text-white bg-black/75 backdrop-blur-md px-2.5 py-1 rounded-lg border border-white/15 shadow-md flex items-center gap-1.5">
+                <Sparkles className="w-3 h-3 text-brand-secondary" />
+                Ver Ficha
+              </span>
+              <span className="w-5 h-5 rounded-full bg-brand-primary/80 backdrop-blur-md flex items-center justify-center text-white shadow-sm">
+                <ChevronRight className="w-3 h-3" />
+              </span>
+            </div>
           </div>
 
-          {/* Información del Juego */}
-          <div className="p-3.5 flex flex-col flex-grow justify-between gap-2.5 relative z-10 bg-brand-card/40 backdrop-blur-sm">
+          {/* Información del Videojuego */}
+          <div className="p-3.5 flex flex-col flex-grow justify-between gap-2.5 relative z-10 bg-brand-card/50 backdrop-blur-sm">
             <div>
               <h3
-                className="font-bold text-sm text-white line-clamp-2 group-hover:text-brand-accent transition-colors duration-200 leading-snug"
+                className="font-bold text-sm text-white line-clamp-2 group-hover:text-brand-secondary transition-colors duration-200 leading-snug"
                 title={game.name}
               >
                 {game.name}
