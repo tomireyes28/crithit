@@ -2,7 +2,8 @@
 
 import React, { useState } from 'react';
 import { ScoreBadge } from '@/components/ui/ScoreBadge';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
+import { SPRING_BOUNCY } from '@/components/ui/MotionWrapper';
 
 export interface ScoreHistogramBucket {
   range: string;
@@ -41,10 +42,10 @@ export const ScoreHistogram: React.FC<ScoreHistogramProps> = ({
   ];
 
   return (
-    <div className="p-6 rounded-3xl bg-brand-surface/40 border border-brand-border/60 space-y-6">
+    <div className="p-6 rounded-3xl glass-card-v2 border border-white/[0.08] relative overflow-hidden space-y-6 shadow-xl">
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-base font-bold text-brand-text flex items-center gap-2">
+          <h3 className="text-base font-bold text-white flex items-center gap-2">
             <span>📊</span>
             <span>Criterio de Calificación</span>
           </h3>
@@ -82,25 +83,50 @@ export const ScoreHistogram: React.FC<ScoreHistogramProps> = ({
                   onMouseEnter={() => setHoveredIndex(idx)}
                   onMouseLeave={() => setHoveredIndex(null)}
                 >
-                  {/* Tooltip flotante */}
-                  {isHovered && (
-                    <div className="absolute -top-9 z-20 px-2 py-1 rounded-md bg-brand-card border border-brand-border text-[11px] font-mono font-bold text-white shadow-xl whitespace-nowrap animate-fade-in pointer-events-none">
-                      {b.range}: {b.count} {b.count === 1 ? 'juego' : 'juegos'}
-                    </div>
-                  )}
+                  {/* Tooltip flotante con resorte elástico */}
+                  <AnimatePresence>
+                    {isHovered && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 6, scale: 0.9 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 4, scale: 0.95 }}
+                        transition={SPRING_BOUNCY}
+                        className="absolute -top-10 z-30 px-2.5 py-1 rounded-lg bg-brand-surface/95 border border-brand-accent/40 backdrop-blur-md text-[11px] font-mono font-bold text-white shadow-[0_4px_16px_rgba(0,0,0,0.5)] whitespace-nowrap pointer-events-none"
+                      >
+                        {b.range}: <span className="text-brand-accent">{b.count}</span> {b.count === 1 ? 'juego' : 'juegos'}
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
 
-                  {/* Barra */}
+                  {/* Barra con entrada elástica y cap luminoso */}
                   <motion.div
                     initial={{ scaleY: 0 }}
-                    animate={{ scaleY: 1 }}
-                    transition={{ duration: 0.45, delay: idx * 0.03, ease: 'easeOut' }}
-                    className="w-full rounded-t-md origin-bottom transition-all duration-300"
+                    whileInView={{ scaleY: 1 }}
+                    viewport={{ once: true }}
+                    transition={{
+                      type: 'spring',
+                      stiffness: 240,
+                      damping: 18,
+                      delay: idx * 0.035,
+                    }}
+                    className="w-full rounded-t-md origin-bottom relative overflow-hidden transition-all duration-300"
                     style={{
                       height: `${heightPercent}%`,
                       backgroundColor: isHovered ? color : `${color}cc`,
-                      boxShadow: isHovered ? `0 0 14px ${color}90` : undefined,
+                      boxShadow: isHovered
+                        ? `0 0 16px ${color}aa, inset 0 1px 0 rgba(255,255,255,0.4)`
+                        : `inset 0 1px 0 rgba(255,255,255,0.2)`,
                     }}
-                  />
+                  >
+                    {/* Borde superior luminoso 2px */}
+                    <div
+                      className="absolute top-0 left-0 right-0 h-0.5"
+                      style={{
+                        backgroundColor: '#ffffff',
+                        opacity: isHovered ? 0.9 : 0.4,
+                      }}
+                    />
+                  </motion.div>
                 </div>
               );
             })}
@@ -120,3 +146,4 @@ export const ScoreHistogram: React.FC<ScoreHistogramProps> = ({
     </div>
   );
 };
+

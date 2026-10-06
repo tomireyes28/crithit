@@ -6,6 +6,8 @@ import { Scale } from 'lucide-react';
 import { ScoreBadge } from '@/components/ui/ScoreBadge';
 import { AnimatedScore } from '@/components/ui/AnimatedScore';
 import { CriticCommunityGapMeter } from '@/components/games/CriticCommunityGapMeter';
+import { motion, useScroll, useTransform, useReducedMotion } from 'framer-motion';
+import { TiltCard, BouncyTap } from '@/components/ui/MotionWrapper';
 
 export interface GameHeroProps {
   game: {
@@ -36,6 +38,13 @@ export interface GameHeroProps {
 export const GameHero: React.FC<GameHeroProps> = ({ game }) => {
   const [coverError, setCoverError] = useState(false);
   const [backdropError, setBackdropError] = useState(false);
+  const shouldReduceMotion = useReducedMotion();
+
+  // Scroll Parallax para el fondo cinematográfico
+  const { scrollY } = useScroll();
+  const backdropY = useTransform(scrollY, [0, 500], [0, 160]);
+  const backdropOpacity = useTransform(scrollY, [0, 400], [0.45, 0.12]);
+  const backdropScale = useTransform(scrollY, [0, 500], [1.05, 1.15]);
 
   const releaseYear = game.firstReleaseDate
     ? new Date(game.firstReleaseDate).getFullYear()
@@ -54,15 +63,24 @@ export const GameHero: React.FC<GameHeroProps> = ({ game }) => {
 
   return (
     <div className="relative w-full overflow-hidden bg-brand-bg">
-      {/* Panorámica / Backdrop con degradados cinematográficos */}
+      {/* Panorámica / Backdrop Cinematográfico con Scroll Parallax Acelerado por GPU */}
       <div className="absolute inset-0 h-[480px] md:h-[560px] w-full overflow-hidden z-0">
         {backdropSrc ? (
-          <img
-            src={backdropSrc}
-            alt={`${game.name} backdrop`}
-            className="w-full h-full object-cover object-center filter brightness-[0.4] blur-[1px] transform scale-105"
-            onError={() => setBackdropError(true)}
-          />
+          <motion.div
+            style={{
+              y: shouldReduceMotion ? 0 : backdropY,
+              opacity: shouldReduceMotion ? 0.4 : backdropOpacity,
+              scale: shouldReduceMotion ? 1 : backdropScale,
+            }}
+            className="w-full h-full will-change-transform"
+          >
+            <img
+              src={backdropSrc}
+              alt={`${game.name} backdrop`}
+              className="w-full h-full object-cover object-center filter blur-[1px]"
+              onError={() => setBackdropError(true)}
+            />
+          </motion.div>
         ) : (
           <div className="w-full h-full bg-gradient-to-b from-brand-surface via-brand-bg to-brand-bg opacity-80" />
         )}
@@ -75,36 +93,40 @@ export const GameHero: React.FC<GameHeroProps> = ({ game }) => {
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-12">
         {/* Breadcrumb de regreso */}
         <div className="mb-6">
-          <Link
-            href="/games"
-            className="inline-flex items-center gap-2 text-xs font-semibold text-brand-muted hover:text-brand-accent transition-colors py-1.5 px-3 rounded-full bg-brand-surface/60 backdrop-blur-md border border-brand-border/40 hover:border-brand-accent/50"
-          >
-            <span>←</span>
-            <span>Volver al catálogo</span>
-          </Link>
+          <BouncyTap scaleOnHover={1.03} scaleOnTap={0.96}>
+            <Link
+              href="/games"
+              className="inline-flex items-center gap-2 text-xs font-semibold text-brand-muted hover:text-white transition-colors py-1.5 px-3.5 rounded-full bg-brand-surface/70 backdrop-blur-md border border-brand-border/60 hover:border-brand-secondary/40 shadow-sm"
+            >
+              <span>←</span>
+              <span>Volver al catálogo</span>
+            </Link>
+          </BouncyTap>
         </div>
 
         {/* Ficha Principal: Poster + Información + Scoreboard */}
         <div className="flex flex-col md:flex-row items-start gap-8 lg:gap-12">
-          {/* Póster Frontal con proporción 3:4 */}
-          <div className="flex-shrink-0 w-44 sm:w-52 md:w-64 aspect-[3/4] rounded-2xl overflow-hidden shadow-2xl shadow-black/80 border border-brand-border/80 bg-brand-surface relative group">
-            {coverSrc ? (
-              <img
-                src={coverSrc}
-                alt={game.name}
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                onError={() => setCoverError(true)}
-              />
-            ) : (
-              <div className="w-full h-full flex flex-col items-center justify-center p-4 text-center bg-gradient-to-br from-brand-surface to-brand-bg">
-                <span className="text-4xl mb-2">🎮</span>
-                <span className="text-xs font-bold text-brand-muted line-clamp-3">
-                  {game.name}
-                </span>
-              </div>
-            )}
-            <div className="absolute inset-0 rounded-2xl border border-white/10 pointer-events-none group-hover:border-brand-accent/40 transition-colors" />
-          </div>
+          {/* Póster Frontal con Tilt 3D reactivo y proporción 3:4 */}
+          <TiltCard maxTilt={5} className="flex-shrink-0 w-44 sm:w-52 md:w-64 aspect-[3/4]">
+            <div className="w-full h-full rounded-2xl overflow-hidden shadow-2xl shadow-black/80 border border-white/10 bg-brand-surface relative group">
+              {coverSrc ? (
+                <img
+                  src={coverSrc}
+                  alt={game.name}
+                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  onError={() => setCoverError(true)}
+                />
+              ) : (
+                <div className="w-full h-full flex flex-col items-center justify-center p-4 text-center bg-gradient-to-br from-brand-surface to-brand-bg">
+                  <span className="text-4xl mb-2">🎮</span>
+                  <span className="text-xs font-bold text-brand-muted line-clamp-3">
+                    {game.name}
+                  </span>
+                </div>
+              )}
+              <div className="absolute inset-0 rounded-2xl border border-white/10 pointer-events-none group-hover:border-brand-secondary/40 transition-colors" />
+            </div>
+          </TiltCard>
 
           {/* Información del Juego */}
           <div className="flex-1 flex flex-col justify-between self-stretch">
@@ -138,8 +160,8 @@ export const GameHero: React.FC<GameHeroProps> = ({ game }) => {
               </p>
             </div>
 
-            {/* Marcador de Puntuaciones Triple de CritHit */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 p-4 rounded-2xl bg-brand-surface/60 backdrop-blur-md border border-brand-border/60">
+            {/* Marcador de Puntuaciones Triple de CritHit con Glassmorphism 2.0 */}
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 p-4 sm:p-5 rounded-2xl glass-card-v2 border border-white/[0.08] shadow-xl">
               {/* 1. CritHit Community Score */}
               <div className="flex items-center gap-3">
                 <ScoreBadge score={game.communityScore} size="lg" />

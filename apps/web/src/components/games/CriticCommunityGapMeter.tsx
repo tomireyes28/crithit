@@ -95,7 +95,7 @@ export const CriticCommunityGapMeter: React.FC<CriticCommunityGapMeterProps> = (
   }
 
   return (
-    <div className="p-5 sm:p-6 rounded-2xl bg-brand-surface/50 border border-brand-border/70 backdrop-blur-md relative overflow-hidden space-y-4">
+    <div className="p-5 sm:p-6 rounded-2xl glass-card-v2 border border-white/[0.08] relative overflow-hidden space-y-4 shadow-xl">
       {/* Resplandor ambiental de polarización */}
       <div
         className={`absolute -top-12 -right-12 w-48 h-48 rounded-full blur-3xl pointer-events-none opacity-20 ${
@@ -130,7 +130,11 @@ export const CriticCommunityGapMeter: React.FC<CriticCommunityGapMeterProps> = (
       {/* Comparador Cara a Cara */}
       <div className="grid grid-cols-2 gap-4 items-center">
         {/* Lado Comunidad */}
-        <div className="p-3.5 rounded-xl bg-brand-bg/60 border border-emerald-500/20 flex items-center justify-between gap-3">
+        <motion.div
+          whileHover={{ scale: 1.02 }}
+          transition={{ type: 'spring', stiffness: 350, damping: 25 }}
+          className="p-3.5 rounded-xl bg-brand-bg/60 border border-emerald-500/20 hover:border-emerald-500/40 transition-colors flex items-center justify-between gap-3"
+        >
           <div className="space-y-0.5">
             <span className="text-[10px] uppercase font-bold tracking-wider text-emerald-400 flex items-center gap-1">
               <Users className="w-3 h-3" /> Comunidad
@@ -140,10 +144,14 @@ export const CriticCommunityGapMeter: React.FC<CriticCommunityGapMeterProps> = (
             </span>
           </div>
           <ScoreBadge score={communityScore} size="md" />
-        </div>
+        </motion.div>
 
         {/* Lado Crítica */}
-        <div className="p-3.5 rounded-xl bg-brand-bg/60 border border-cyan-500/20 flex items-center justify-between gap-3">
+        <motion.div
+          whileHover={{ scale: 1.02 }}
+          transition={{ type: 'spring', stiffness: 350, damping: 25 }}
+          className="p-3.5 rounded-xl bg-brand-bg/60 border border-cyan-500/20 hover:border-cyan-500/40 transition-colors flex items-center justify-between gap-3"
+        >
           <div className="space-y-0.5">
             <span className="text-[10px] uppercase font-bold tracking-wider text-cyan-400 flex items-center gap-1">
               <Award className="w-3 h-3" /> Crítica Verificada
@@ -153,7 +161,7 @@ export const CriticCommunityGapMeter: React.FC<CriticCommunityGapMeterProps> = (
             </span>
           </div>
           <ScoreBadge score={criticScore} size="md" />
-        </div>
+        </motion.div>
       </div>
 
       {/* Barra de Tensión / Tug-of-War Visual */}
@@ -170,21 +178,21 @@ export const CriticCommunityGapMeter: React.FC<CriticCommunityGapMeterProps> = (
           </span>
         </div>
 
-        <div className="relative h-3 rounded-full overflow-hidden bg-brand-bg border border-brand-border/60">
+        <div className="relative h-3.5 rounded-full overflow-hidden bg-brand-bg border border-brand-border/60 shadow-inner">
           {/* Pista de color gradiente continuo */}
-          <div className="absolute inset-0 bg-gradient-to-r from-emerald-500 via-amber-500/40 to-cyan-500 opacity-70" />
+          <div className="absolute inset-0 bg-gradient-to-r from-emerald-500 via-amber-500/40 to-cyan-500 opacity-75" />
 
           {/* Línea de referencia central (empate 0) */}
           <div className="absolute left-1/2 top-0 bottom-0 w-0.5 bg-brand-text/40 z-0" />
 
-          {/* Puntero reactivo de tensión */}
+          {/* Puntero oscilante reactivo de tensión con física de resorte natural */}
           <motion.div
-            initial={{ left: '50%' }}
-            animate={{ left: `${pointerPercent}%` }}
-            transition={{ type: 'spring', stiffness: 220, damping: 22 }}
-            className="absolute top-0 bottom-0 w-3 -ml-1.5 bg-white rounded-full shadow-[0_0_12px_rgba(255,255,255,0.9)] z-10 flex items-center justify-center"
+            initial={{ left: '50%', scale: 0.8 }}
+            animate={{ left: `${pointerPercent}%`, scale: 1 }}
+            transition={{ type: 'spring', stiffness: 180, damping: 14 }}
+            className="absolute top-0 bottom-0 w-3.5 -ml-[7px] bg-white rounded-full shadow-[0_0_14px_rgba(255,255,255,1)] z-10 flex items-center justify-center cursor-pointer"
           >
-            <div className="w-1 h-1 rounded-full bg-brand-bg" />
+            <div className="w-1.5 h-1.5 rounded-full bg-brand-bg shadow-sm" />
           </motion.div>
         </div>
       </div>
